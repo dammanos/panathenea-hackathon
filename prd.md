@@ -2,13 +2,12 @@
 
 ## 1. Overview
 
-TopoTools is a web-based surveying platform for Greek land surveyors and property professionals. It provides coordinate conversion, polygon area calculation, and zoning compliance checks against Greece's official spatial data sources (TEE Unified Digital Map).
+TopoTools is a web-based surveying platform for Greek land surveyors and property professionals. It provides coordinate conversion and zoning compliance checks against Greece's official spatial data sources (TEE Unified Digital Map).
 
 ## 2. Problem Statement
 
 Greek surveyors routinely need to:
 - Convert coordinates between national (EGSA87, GGRS87, TM07) and international (WGS84) systems
-- Calculate plot areas from survey points
 - Check zoning regulations, building parameters, and environmental restrictions for parcels
 
 These tasks currently require multiple disconnected tools, desktop GIS software, or manual lookups on government portals. TopoTools unifies them into a single, fast, mobile-friendly web app.
@@ -36,48 +35,36 @@ These tasks currently require multiple disconnected tools, desktop GIS software,
 | FR-1.7 | All math runs client-side (no backend dependency) |
 | FR-1.8 | Hub conversion pattern: all inputs convert to GGRS87 geographic, then fan out to all outputs |
 
-### FR-2: Polygon Area Calculator (Client-side)
+### FR-2: Zoning Check (Backend-dependent)
 
 | ID | Requirement |
 |----|-------------|
-| FR-2.1 | Accept polygon vertices in any of the 6 coordinate systems |
-| FR-2.2 | Support manual entry and file upload |
-| FR-2.3 | Convert all points to EGSA87 and compute area via Shoelace/Gauss formula |
-| FR-2.4 | Display area in m2, hectares, and stremma (1 stremma = 1000 m2) |
-| FR-2.5 | Render interactive Leaflet map with polygon outline and numbered vertex markers |
-| FR-2.6 | Reverse geocode polygon centroid |
-| FR-2.7 | Export: copy formatted result, download CSV report |
+| FR-2.1 | Look up parcels by KAEK code (POST /api/v1/zoning/kaek) |
+| FR-2.2 | Strip "KAEK" prefix variants from user input before lookup |
+| FR-2.3 | Full zoning check by coordinates (POST /api/v1/zoning/check) |
+| FR-2.4 | Query TEE ArcGIS layers: building params (7 layers), Natura 2000, archaeological (5 sublayers), forest maps, shoreline, ZOE |
+| FR-2.5 | Fall back to static JSON zoning rules when TEE is unreachable |
+| FR-2.6 | Return verdict (green/yellow/red) based on risk flag severity |
+| FR-2.7 | Display: verdict card, meta grid, risk flags, building params grid, data source, disclaimer |
+| FR-2.8 | Show Leaflet map with color-coded marker and 100m circle |
+| FR-2.9 | Support intended use: residential, commercial, industrial, agricultural, tourism |
 
-### FR-3: Zoning Check (Backend-dependent)
-
-| ID | Requirement |
-|----|-------------|
-| FR-3.1 | Look up parcels by KAEK code (POST /api/v1/zoning/kaek) |
-| FR-3.2 | Strip "KAEK" prefix variants from user input before lookup |
-| FR-3.3 | Full zoning check by coordinates (POST /api/v1/zoning/check) |
-| FR-3.4 | Query TEE ArcGIS layers: building params (7 layers), Natura 2000, archaeological (5 sublayers), forest maps, shoreline, ZOE |
-| FR-3.5 | Fall back to static JSON zoning rules when TEE is unreachable |
-| FR-3.6 | Return verdict (green/yellow/red) based on risk flag severity |
-| FR-3.7 | Display: verdict card, meta grid, risk flags, building params grid, data source, disclaimer |
-| FR-3.8 | Show Leaflet map with color-coded marker and 100m circle |
-| FR-3.9 | Support intended use: residential, commercial, industrial, agricultural, tourism |
-
-### FR-4: Internationalization
+### FR-3: Internationalization
 
 | ID | Requirement |
 |----|-------------|
-| FR-4.1 | Greek (default) and English languages |
-| FR-4.2 | ~100 UI string keys per language |
-| FR-4.3 | Language persisted to localStorage |
-| FR-4.4 | data-i18n attribute system for text, HTML, and placeholder content |
+| FR-3.1 | Greek (default) and English languages |
+| FR-3.2 | ~100 UI string keys per language |
+| FR-3.3 | Language persisted to localStorage |
+| FR-3.4 | data-i18n attribute system for text, HTML, and placeholder content |
 
-### FR-5: Theme
+### FR-4: Theme
 
 | ID | Requirement |
 |----|-------------|
-| FR-5.1 | Dark theme (default) and light theme |
-| FR-5.2 | Toggle via data-theme attribute on html element |
-| FR-5.3 | CSS custom properties for all theme colors |
+| FR-4.1 | Dark theme (default) and light theme |
+| FR-4.2 | Toggle via data-theme attribute on html element |
+| FR-4.3 | CSS custom properties for all theme colors |
 
 ## 5. Non-Functional Requirements
 
@@ -133,10 +120,9 @@ project-root/
 
 1. Convert: EGSA87 (481000, 4205000) produces valid WGS84, GGRS87, TM07, DMS outputs
 2. Convert: CSV file upload parses correctly and exports match
-3. Area: 4+ polygon points produce correct m2/hectares/stremma with map
-4. Zoning: KAEK "050461527012" returns parcel coordinates
-5. Zoning: KAEK input "KAEK 050092643002" has prefix stripped
-6. Zoning: Check returns verdict with params, risk flags, and map
-7. i18n: All UI text toggles between Greek and English
-8. Theme: Dark/light toggle works across all tabs
-9. Mobile: Usable at 360px viewport width
+3. Zoning: KAEK "050461527012" returns parcel coordinates
+4. Zoning: KAEK input "KAEK 050092643002" has prefix stripped
+5. Zoning: Check returns verdict with params, risk flags, and map
+6. i18n: All UI text toggles between Greek and English
+7. Theme: Dark/light toggle works across all tabs
+8. Mobile: Usable at 360px viewport width

@@ -170,7 +170,7 @@ Each task follows: **Write tests -> Implement -> Verify tests pass -> Refactor i
   - CSS custom properties for dark and light themes
   - Grid background overlay (body::before)
   - Container, header (logo, title, version badge, lang toggle, theme toggle)
-  - Tab bar (Convert, Area, Zoning) as pill buttons
+  - Tab bar (Convert, Zoning) as pill buttons
   - Card base styles, button styles, responsive breakpoints
 - [ ] **Verify**: Visual check in browser
 
@@ -236,44 +236,9 @@ Each task follows: **Write tests -> Implement -> Verify tests pass -> Refactor i
 
 ---
 
-## Phase 8: Frontend - Area Tab
+## Phase 8: Frontend - Zoning Tab
 
-### Task 8.1: Area calculator UI and math
-- [ ] **Test**: Manual browser test
-  - Enter 4 polygon points in EGSA87
-  - Click CALCULATE AREA
-  - Area displayed in m2 (green, large), hectares, stremma
-  - Values are mathematically correct (verify with known polygon)
-  - EGSA87 points table shown
-- [ ] **Implement**: Area tab HTML + JS
-  - Coordinate system selector
-  - Manual point entry (multi-row)
-  - `pointToEgsa87()` - converts any system to EGSA87
-  - `shoelaceArea(points)` - Gauss formula
-  - Results display (m2, hectares, stremma)
-  - EGSA87 points table
-- [ ] **Verify**: Known polygon area matches expected value
-
-### Task 8.2: Area tab map and extras
-- [ ] **Test**: Manual browser test
-  - Leaflet map renders with polygon outline
-  - Numbered markers on each vertex
-  - Reverse geocode of centroid shows address
-  - File upload works (shared parseBulkCoordinates)
-  - Copy result and CSV export work
-- [ ] **Implement**:
-  - Leaflet map initialization and polygon rendering
-  - Numbered markers (L.divIcon)
-  - Centroid calculation and reverse geocode
-  - File upload mode (reuse parseBulkCoordinates)
-  - Export: copy formatted text, CSV download
-- [ ] **Verify**: Full flow with map display
-
----
-
-## Phase 9: Frontend - Zoning Tab
-
-### Task 9.1: Zoning tab KAEK lookup
+### Task 8.1: Zoning tab KAEK lookup
 - [ ] **Test**: Manual + backend running
   - Enter KAEK "050461527012", click FIND, coords auto-fill
   - Enter "KAEK 050092643002" with prefix, verify prefix stripped
@@ -286,7 +251,7 @@ Each task follows: **Write tests -> Implement -> Verify tests pass -> Refactor i
   - Auto-fill coordinate fields from response
 - [ ] **Verify**: KAEK lookup works end-to-end
 
-### Task 9.2: Zoning tab full check
+### Task 8.2: Zoning tab full check
 - [ ] **Test**: Manual + backend running
   - Select EGSA87, enter coords, select intended use, click CHECK ZONING
   - Spinner shows during request
@@ -309,25 +274,24 @@ Each task follows: **Write tests -> Implement -> Verify tests pass -> Refactor i
 
 ---
 
-## Phase 10: Integration & Polish
+## Phase 9: Integration & Polish
 
-### Task 10.1: Known issues fixes
+### Task 9.1: Known issues fixes
 - [ ] Fix `--muted` CSS var usage (not `--text-secondary`)
 - [ ] Fix `--accent` CSS var for FEK links (not `--primary`)
 - [ ] Scope `switchInputMode()` selector to `#tab-convert .input-mode-btn`
 - [ ] Fix or remove "Show all rows" button (either show all or remove)
 
-### Task 10.2: Cross-tab integration testing
+### Task 9.2: Cross-tab integration testing
 - [ ] **Test**: Full flow with backend running
   - Convert: single point, multi-point, file upload, all exports
-  - Area: manual points, file upload, map, exports
   - Zoning: KAEK lookup, full check, fallback when TEE is down
   - i18n: toggle EL/EN on every tab, verify all strings
   - Theme: toggle dark/light on every tab
   - Mobile: test at 360px viewport
 - [ ] Fix any issues found
 
-### Task 10.3: Shared utilities verification
+### Task 9.3: Shared utilities verification
 - [ ] `showToast()` displays and fades correctly
 - [ ] `reverseGeocode()` respects current language
 - [ ] `escapeHtml()` prevents XSS
@@ -348,7 +312,6 @@ Each task follows: **Write tests -> Implement -> Verify tests pass -> Refactor i
 | 5 | 3 | FastAPI app + routers |
 | 6 | 2 | Frontend skeleton + i18n |
 | 7 | 3 | Convert tab (client-side) |
-| 8 | 2 | Area tab (client-side) |
-| 9 | 2 | Zoning tab (backend-dependent) |
-| 10 | 3 | Polish + integration |
-| **Total** | **23 tasks** | |
+| 8 | 2 | Zoning tab (backend-dependent) |
+| 9 | 3 | Polish + integration |
+| **Total** | **21 tasks** | |

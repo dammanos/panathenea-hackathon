@@ -123,7 +123,7 @@ One self-contained file with embedded CSS + JS. No build tools. CDN deps: IBM Pl
 ### Layout
 - `.container` max-width 820px, centered
 - Header: logo "TT" gradient box + title + version badge + EL/EN lang toggle + theme toggle
-- Tab bar: 3 tabs (Convert, Area, Zoning) as pill-style buttons
+- Tab bar: 2 tabs (Convert, Zoning) as pill-style buttons
 - Responsive: 2 breakpoints at 680px and 460px
 
 ### i18n System
@@ -158,21 +158,7 @@ Features:
 
 **Hub pattern**: all conversions go through GGRS87 geographic as internal hub. Input->GGRS87->all outputs.
 
-### Tab 2: Area (Polygon Area Calculator)
-**ALL CLIENT-SIDE.**
-
-Features:
-- Coordinate system selector (same 6 systems)
-- Toggle: Manual entry / File upload
-- Manual: multi-point polygon vertices, CALCULATE AREA button
-- Points converted to EGSA87 via `pointToEgsa87()`, then `shoelaceArea()` (Shoelace/Gauss formula)
-- Results: big number in m2 (green, 28px), plus hectares + stremma (Greek unit, 1 stremma = 1000 m2)
-- Interactive Leaflet map showing polygon with numbered markers
-- EGSA87 points table (scrollable, sticky header)
-- Reverse geocode polygon centroid
-- Export: Copy result (formatted text), Download CSV report
-
-### Tab 3: Zoning (Backend-dependent)
+### Tab 2: Zoning (Backend-dependent)
 
 Features:
 - KAEK input with FIND button (POST to /api/v1/zoning/kaek). Strip "KAEK " or "KAEK " prefix before sending. Button must have `width:auto` to override global `.btn { width:100% }`.
@@ -190,7 +176,7 @@ Features:
 - `reverseGeocode(lat, lon, targetId)` - Nominatim, respects current language
 - `escapeHtml(str)` - via textContent/innerHTML trick
 - `copyValue()`, `fallbackCopy()` - clipboard API with execCommand fallback
-- `parseBulkCoordinates(text, inputSystem)` - shared between Convert file upload and Area file upload
+- `parseBulkCoordinates(text, inputSystem)` - shared utility for Convert file upload parsing
 
 ---
 
@@ -205,19 +191,17 @@ uvicorn backend.main:app --reload
 **Test checklist:**
 1. Convert tab: enter EGSA87 coords (e.g. 481000, 4205000), convert, verify all 6 output systems
 2. Convert tab: upload a CSV file, verify table + export
-3. Area tab: enter 4+ polygon points, verify area + map + numbered markers
-4. Area tab: upload points file, verify same
-5. Zoning tab: enter KAEK "050461527012", click FIND, verify coords auto-fill
-6. Zoning tab: paste "KAEK 050092643002" with prefix, verify prefix stripped
-7. Zoning tab: click CHECK ZONING, verify verdict + params + risk flags + map
-8. Toggle EL/EN, verify all UI text changes
-9. Toggle dark/light theme
-10. Test on mobile viewport width
+3. Zoning tab: enter KAEK "050461527012", click FIND, verify coords auto-fill
+4. Zoning tab: paste "KAEK 050092643002" with prefix, verify prefix stripped
+5. Zoning tab: click CHECK ZONING, verify verdict + params + risk flags + map
+6. Toggle EL/EN, verify all UI text changes
+7. Toggle dark/light theme
+8. Test on mobile viewport width
 
 ---
 
 ## Known Issues to Fix During Build
 - Use `--muted` CSS var (not `--text-secondary` which is undefined) for secondary text
 - Use `--accent` CSS var (not `--primary` which is undefined) for FEK links
-- Scope `switchInputMode()` selector to `#tab-convert .input-mode-btn` to avoid leaking to Area tab
+- Scope `switchInputMode()` selector to `#tab-convert .input-mode-btn`
 - "Show all rows" button re-renders with same 500 cap - either remove or fix to actually show all
