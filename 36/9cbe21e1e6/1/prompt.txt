@@ -57,3 +57,7 @@ ok i added credits, try again
 ---
 
 commit and push
+
+---
+
+we will also now remove zoning tab. we dont need it anymore. also remove all non neccesarry things
