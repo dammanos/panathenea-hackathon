@@ -1,0 +1,90 @@
+[
+  {
+    "name": "General Residential",
+    "coverage_ratio": 0.6,
+    "building_factor": 1.8,
+    "max_height_m": 21.0,
+    "min_lot_size_m2": 200.0,
+    "min_frontage_m": 10.0,
+    "setback_front_m": 3.0,
+    "setback_side_m": 2.5,
+    "max_floors": 6
+  },
+  {
+    "name": "Dense Urban",
+    "coverage_ratio": 0.7,
+    "building_factor": 2.4,
+    "max_height_m": 32.0,
+    "min_lot_size_m2": 150.0,
+    "min_frontage_m": 8.0,
+    "setback_front_m": 0.0,
+    "setback_side_m": 0.0,
+    "max_floors": 10
+  },
+  {
+    "name": "Commercial",
+    "coverage_ratio": 0.7,
+    "building_factor": 2.6,
+    "max_height_m": 35.0,
+    "min_lot_size_m2": 300.0,
+    "min_frontage_m": 12.0,
+    "setback_front_m": 0.0,
+    "setback_side_m": 0.0,
+    "max_floors": 11
+  },
+  {
+    "name": "Mixed Use",
+    "coverage_ratio": 0.6,
+    "building_factor": 2.0,
+    "max_height_m": 24.0,
+    "min_lot_size_m2": 250.0,
+    "min_frontage_m": 10.0,
+    "setback_front_m": 3.0,
+    "setback_side_m": 2.5,
+    "max_floors": 7
+  },
+  {
+    "name": "Outside Plan Agricultural",
+    "coverage_ratio": 0.1,
+    "building_factor": 0.2,
+    "max_height_m": 7.5,
+    "min_lot_size_m2": 4000.0,
+    "min_frontage_m": 25.0,
+    "setback_front_m": 5.0,
+    "setback_side_m": 5.0,
+    "max_floors": 2
+  },
+  {
+    "name": "Outside Plan Residential",
+    "coverage_ratio": 0.2,
+    "building_factor": 0.4,
+    "max_height_m": 9.0,
+    "min_lot_size_m2": 2000.0,
+    "min_frontage_m": 20.0,
+    "setback_front_m": 5.0,
+    "setback_side_m": 5.0,
+    "max_floors": 2
+  },
+  {
+    "name": "Industrial",
+    "coverage_ratio": 0.5,
+    "building_factor": 1.6,
+    "max_height_m": 15.0,
+    "min_lot_size_m2": 1000.0,
+    "min_frontage_m": 20.0,
+    "setback_front_m": 5.0,
+    "setback_side_m": 5.0,
+    "max_floors": 3
+  },
+  {
+    "name": "Tourism",
+    "coverage_ratio": 0.2,
+    "building_factor": 0.6,
+    "max_height_m": 11.0,
+    "min_lot_size_m2": 4000.0,
+    "min_frontage_m": 25.0,
+    "setback_front_m": 5.0,
+    "setback_side_m": 5.0,
+    "max_floors": 3
+  }
+]
