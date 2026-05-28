@@ -1,0 +1,54 @@
+{
+  "cli_version": "0.6.3",
+  "checkpoint_id": "8d5e5a4fd297",
+  "session_id": "c6e1d095-a687-436d-83b2-1fec55f2ac39",
+  "strategy": "manual-commit",
+  "created_at": "2026-05-28T08:25:14.387883Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "tests/test_static_data.py",
+    "backend/data/zoning_rules.json",
+    "backend/data/natura2000_areas.json",
+    "backend/data/archaeological_zones.json"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-6",
+  "turn_id": "1386062a4003",
+  "checkpoint_transcript_start": 134,
+  "transcript_lines_at_start": 134,
+  "token_usage": {
+    "input_tokens": 8,
+    "cache_creation_tokens": 5213,
+    "cache_read_tokens": 280238,
+    "output_tokens": 4042,
+    "api_call_count": 6
+  },
+  "session_metrics": {
+    "turn_count": 4
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-05-28T08:25:14.377244Z",
+    "agent_lines": 345,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 345,
+    "total_lines_changed": 345,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 8,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 8
+      }
+    }
+  ]
+}

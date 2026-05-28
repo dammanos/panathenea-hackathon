@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.6.3",
+  "checkpoint_id": "8d5e5a4fd297",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "backend/data/archaeological_zones.json",
+    "backend/data/natura2000_areas.json",
+    "backend/data/zoning_rules.json",
+    "tests/test_static_data.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/8d/5e5a4fd297/0/metadata.json",
+      "transcript": "/8d/5e5a4fd297/0/full.jsonl",
+      "content_hash": "/8d/5e5a4fd297/0/content_hash.txt",
+      "prompt": "/8d/5e5a4fd297/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 8,
+    "cache_creation_tokens": 5213,
+    "cache_read_tokens": 280238,
+    "output_tokens": 4042,
+    "api_call_count": 6
+  }
+}
