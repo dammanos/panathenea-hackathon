@@ -1,0 +1,82 @@
+[
+  {
+    "code": "GR3000006",
+    "name": "Oros Ymittos",
+    "center_lat": 37.9500,
+    "center_lon": 23.7800,
+    "protection_level": "B",
+    "type": "SCI",
+    "area_ha": 1650,
+    "description": "Mount Hymettus, east of Athens. Pine forests and Mediterranean scrubland."
+  },
+  {
+    "code": "GR3000015",
+    "name": "Oros Parnitha",
+    "center_lat": 38.1700,
+    "center_lon": 23.7300,
+    "protection_level": "A",
+    "type": "SPA/SCI",
+    "area_ha": 3800,
+    "description": "Mount Parnitha National Park. Diverse flora and fauna, fir forests."
+  },
+  {
+    "code": "GR3000005",
+    "name": "Oros Penteli",
+    "center_lat": 38.0500,
+    "center_lon": 23.8700,
+    "protection_level": "B",
+    "type": "SCI",
+    "area_ha": 980,
+    "description": "Mount Pentelicus. Historic marble quarries and pine forests."
+  },
+  {
+    "code": "GR2520006",
+    "name": "Limnothalassa Messolongiou",
+    "center_lat": 38.3400,
+    "center_lon": 21.4200,
+    "protection_level": "A",
+    "type": "SPA/SCI",
+    "area_ha": 33687,
+    "description": "Messolonghi lagoon complex. Major wetland of international importance."
+  },
+  {
+    "code": "GR1270009",
+    "name": "Delta Axiou - Loudia - Aliakmona",
+    "center_lat": 40.5200,
+    "center_lon": 22.7000,
+    "protection_level": "A",
+    "type": "SPA/SCI",
+    "area_ha": 11480,
+    "description": "Axios-Loudias-Aliakmonas river delta near Thessaloniki."
+  },
+  {
+    "code": "GR4110004",
+    "name": "Ethnikos Drymos Samarias",
+    "center_lat": 35.3100,
+    "center_lon": 23.9600,
+    "protection_level": "A",
+    "type": "SPA/SCI",
+    "area_ha": 4850,
+    "description": "Samaria Gorge National Park in Crete."
+  },
+  {
+    "code": "GR1430004",
+    "name": "Oros Olympos",
+    "center_lat": 40.0900,
+    "center_lon": 22.3500,
+    "protection_level": "A",
+    "type": "SPA/SCI",
+    "area_ha": 8000,
+    "description": "Mount Olympus National Park. Highest mountain in Greece."
+  },
+  {
+    "code": "GR3000016",
+    "name": "Sounio - Agios Panteleimonas",
+    "center_lat": 37.6600,
+    "center_lon": 24.0200,
+    "protection_level": "B",
+    "type": "SCI",
+    "area_ha": 3500,
+    "description": "Cape Sounion area. Mediterranean coastal habitats."
+  }
+]

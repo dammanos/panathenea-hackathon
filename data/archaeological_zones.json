@@ -1,0 +1,82 @@
+[
+  {
+    "name": "Acropolis & Slopes",
+    "center_lat": 37.9715,
+    "center_lon": 23.7257,
+    "protection_level": "A",
+    "type": "monument",
+    "description": "Acropolis of Athens and surrounding slopes. Absolute protection zone."
+  },
+  {
+    "name": "Ancient Agora of Athens",
+    "center_lat": 37.9747,
+    "center_lon": 23.7227,
+    "protection_level": "A",
+    "type": "archaeological_site",
+    "description": "Ancient marketplace and civic center of classical Athens."
+  },
+  {
+    "name": "Kerameikos",
+    "center_lat": 37.9783,
+    "center_lon": 23.7187,
+    "protection_level": "A",
+    "type": "archaeological_site",
+    "description": "Ancient cemetery and potters quarter of Athens."
+  },
+  {
+    "name": "Roman Agora & Library of Hadrian",
+    "center_lat": 37.9742,
+    "center_lon": 23.7267,
+    "protection_level": "A",
+    "type": "monument",
+    "description": "Roman-era commercial center and monumental library."
+  },
+  {
+    "name": "Temple of Poseidon at Sounion",
+    "center_lat": 37.6503,
+    "center_lon": 24.0244,
+    "protection_level": "A",
+    "type": "monument",
+    "description": "5th century BCE temple at Cape Sounion."
+  },
+  {
+    "name": "Eleusis Archaeological Site",
+    "center_lat": 38.0417,
+    "center_lon": 23.5383,
+    "protection_level": "A",
+    "type": "archaeological_site",
+    "description": "Sanctuary of Demeter and site of the Eleusinian Mysteries."
+  },
+  {
+    "name": "Brauron Sanctuary",
+    "center_lat": 37.9250,
+    "center_lon": 23.9950,
+    "protection_level": "B",
+    "type": "archaeological_site",
+    "description": "Sanctuary of Artemis in eastern Attica."
+  },
+  {
+    "name": "Amphiareion of Oropos",
+    "center_lat": 38.3000,
+    "center_lon": 23.7600,
+    "protection_level": "B",
+    "type": "archaeological_site",
+    "description": "Ancient sanctuary and therapeutic center in northern Attica."
+  },
+  {
+    "name": "Plato's Academy",
+    "center_lat": 37.9917,
+    "center_lon": 23.7083,
+    "protection_level": "B",
+    "type": "archaeological_site",
+    "description": "Site of Plato's famous school of philosophy."
+  },
+  {
+    "name": "Thorikos Ancient Theatre",
+    "center_lat": 37.7350,
+    "center_lon": 24.0550,
+    "protection_level": "B",
+    "type": "monument",
+    "description": "One of the oldest known theatres in the world, in Lavrio."
+  }
+]

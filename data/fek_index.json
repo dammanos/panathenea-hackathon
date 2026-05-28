@@ -1,0 +1,166 @@
+{
+  "description": "Pre-indexed FEK decrees for demo municipalities. In production this would be a full database.",
+  "decrees": [
+    {
+      "fek": "FEK 1089/D/2003",
+      "municipality": "Rafina-Pikermi",
+      "region": "East Attica",
+      "title": "Approval of city plan for Rafina coastal area",
+      "zones": [
+        {
+          "name": "Residential Zone A (Katoikia A)",
+          "code": "KA",
+          "coverage_ratio": 0.40,
+          "building_factor": 0.80,
+          "max_height_m": 7.5,
+          "max_floors": 2,
+          "min_lot_m2": 600,
+          "setback_front_m": 5.0,
+          "setback_side_m": 3.0
+        },
+        {
+          "name": "Residential Zone B (Katoikia B)",
+          "code": "KB",
+          "coverage_ratio": 0.60,
+          "building_factor": 1.20,
+          "max_height_m": 11.0,
+          "max_floors": 3,
+          "min_lot_m2": 500,
+          "setback_front_m": 5.0,
+          "setback_side_m": 3.0
+        }
+      ],
+      "special_conditions": [
+        "Within 500m of coast: max height 7.5m regardless of zone",
+        "Lots near archaeological site of Brauron: require Ministry of Culture approval"
+      ]
+    },
+    {
+      "fek": "FEK 567/D/1986",
+      "municipality": "Athens (Central)",
+      "region": "Central Attica",
+      "title": "General City Plan of Athens",
+      "zones": [
+        {
+          "name": "Dense Residential (Amigi Katoikia)",
+          "code": "AK",
+          "coverage_ratio": 0.70,
+          "building_factor": 2.40,
+          "max_height_m": 17.5,
+          "max_floors": 5,
+          "min_lot_m2": 300,
+          "setback_front_m": 0.0,
+          "setback_side_m": 0.0,
+          "notes": "Continuous building system (syneches)"
+        },
+        {
+          "name": "Commercial Zone",
+          "code": "EM",
+          "coverage_ratio": 0.70,
+          "building_factor": 3.60,
+          "max_height_m": 32.0,
+          "max_floors": 10,
+          "min_lot_m2": 200,
+          "setback_front_m": 0.0,
+          "setback_side_m": 0.0
+        }
+      ],
+      "special_conditions": [
+        "Unification of Archaeological Sites zone: max height 11m, special aesthetic requirements",
+        "Plaka traditional settlement: strict preservation rules, Ministry approval required"
+      ]
+    },
+    {
+      "fek": "FEK 234/D/2011",
+      "municipality": "Chania",
+      "region": "Crete",
+      "title": "General City Plan of Chania wider area",
+      "zones": [
+        {
+          "name": "Residential Zone (Katoikia)",
+          "code": "K",
+          "coverage_ratio": 0.50,
+          "building_factor": 1.00,
+          "max_height_m": 9.0,
+          "max_floors": 2,
+          "min_lot_m2": 500,
+          "setback_front_m": 4.0,
+          "setback_side_m": 3.0
+        },
+        {
+          "name": "Tourism Development Zone",
+          "code": "T",
+          "coverage_ratio": 0.20,
+          "building_factor": 0.40,
+          "max_height_m": 7.5,
+          "max_floors": 2,
+          "min_lot_m2": 4000,
+          "setback_front_m": 10.0,
+          "setback_side_m": 5.0,
+          "notes": "Environmental impact study required for >50 beds"
+        }
+      ],
+      "special_conditions": [
+        "Old town of Chania: special preservation zone, no new construction",
+        "Proximity to Samaria Gorge Natura 2000: EIA required within 2km"
+      ]
+    },
+    {
+      "fek": "FEK 178/D/2005",
+      "municipality": "Glyfada",
+      "region": "South Attica",
+      "title": "City plan modification for Glyfada coastal zone",
+      "zones": [
+        {
+          "name": "Residential Gamma (Katoikia Γ)",
+          "code": "KG",
+          "coverage_ratio": 0.60,
+          "building_factor": 1.20,
+          "max_height_m": 11.0,
+          "max_floors": 3,
+          "min_lot_m2": 500,
+          "setback_front_m": 5.0,
+          "setback_side_m": 3.0
+        }
+      ],
+      "special_conditions": [
+        "Coastal setback (aigialos): no construction within 50m of shoreline",
+        "OPEKEPE: no agricultural classification conflicts in urban zone"
+      ]
+    },
+    {
+      "fek": "FEK 891/D/2009",
+      "municipality": "Thessaloniki (Central)",
+      "region": "Central Macedonia",
+      "title": "General City Plan of Thessaloniki metropolitan area",
+      "zones": [
+        {
+          "name": "Dense Urban Residential",
+          "code": "PA",
+          "coverage_ratio": 0.70,
+          "building_factor": 2.40,
+          "max_height_m": 21.0,
+          "max_floors": 6,
+          "min_lot_m2": 300,
+          "setback_front_m": 0.0,
+          "setback_side_m": 0.0
+        },
+        {
+          "name": "Commercial-Office Zone",
+          "code": "GE",
+          "coverage_ratio": 0.70,
+          "building_factor": 3.00,
+          "max_height_m": 25.0,
+          "max_floors": 8,
+          "min_lot_m2": 250,
+          "setback_front_m": 0.0,
+          "setback_side_m": 0.0
+        }
+      ],
+      "special_conditions": [
+        "White Tower monument zone: max height 11m within 200m radius",
+        "Ancient Forum archaeological zone: no new construction, restoration only"
+      ]
+    }
+  ]
+}
