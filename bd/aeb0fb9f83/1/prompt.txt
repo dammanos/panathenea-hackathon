@@ -65,3 +65,11 @@ we will also now remove zoning tab. we dont need it anymore. also remove all non
 ---
 
 /init
+
+---
+
+/review
+
+---
+
+make a finalisation review and tighten anything if needed.as a final step make a nice README.md explaining hot our project operates and include authors: Manos Damaskinakis, Lefteris Tzokas,Dimitris Kolias
