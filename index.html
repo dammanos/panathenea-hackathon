@@ -1246,17 +1246,54 @@ function parseBulkCoordinates(text, inputSystem) {
   return points;
 }
 
+// Prevent browser from opening dropped files outside drop zones
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => e.preventDefault());
+
 // Drop zone setup
-function setupDropZone(zoneId, fileInputId, handler) {
+function setupDropZone(zoneId, fileInputId, handler, tabPrefix) {
   const zone = document.getElementById(zoneId);
   const input = document.getElementById(fileInputId);
+
   zone.addEventListener('click', () => input.click());
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); zone.classList.add('dragover'); });
   zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
   zone.addEventListener('drop', e => {
-    e.preventDefault(); zone.classList.remove('dragover');
-    if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; handler({ target: input }); }
+    e.preventDefault(); e.stopPropagation(); zone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+      const dt = new DataTransfer();
+      dt.items.add(e.dataTransfer.files[0]);
+      input.files = dt.files;
+      handler({ target: input });
+    }
   });
+
+  // Also allow dropping on the entire tab card — auto-switch to file mode
+  if (tabPrefix) {
+    const tabPanel = document.getElementById('tab-' + tabPrefix);
+    if (tabPanel) {
+      tabPanel.addEventListener('dragover', e => {
+        e.preventDefault();
+        // Auto-switch to file mode so drop zone is visible
+        switchInputMode(tabPrefix, 'file');
+        zone.classList.add('dragover');
+      });
+      tabPanel.addEventListener('dragleave', e => {
+        // Only remove if leaving the tab panel entirely
+        if (!tabPanel.contains(e.relatedTarget)) zone.classList.remove('dragover');
+      });
+      tabPanel.addEventListener('drop', e => {
+        e.preventDefault(); zone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+          switchInputMode(tabPrefix, 'file');
+          const dt = new DataTransfer();
+          dt.items.add(e.dataTransfer.files[0]);
+          input.files = dt.files;
+          handler({ target: input });
+        }
+      });
+    }
+  }
 }
 
 function handleConvertFile(event) {
@@ -1648,8 +1685,8 @@ function renderZoningMap(data) {
    ======================================================================== */
 document.addEventListener('DOMContentLoaded', function() {
   setLanguage(currentLang);
-  setupDropZone('convert-drop-zone', 'convert-file-input', handleConvertFile);
-  setupDropZone('area-drop-zone', 'area-file-input', handleAreaFile);
+  setupDropZone('convert-drop-zone', 'convert-file-input', handleConvertFile, 'convert');
+  setupDropZone('area-drop-zone', 'area-file-input', handleAreaFile, 'area');
 });
 </script>
 </body>
