@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.6.3",
+  "checkpoint_id": "9b9e61a6fe37",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 12,
+  "files_touched": [
+    "backend/routers/report.py",
+    "backend/services/ai_report.py",
+    "backend/services/tee_service.py",
+    "index.html"
+  ],
+  "sessions": [
+    {
+      "metadata": "/9b/9e61a6fe37/0/metadata.json",
+      "transcript": "/9b/9e61a6fe37/0/full.jsonl",
+      "content_hash": "/9b/9e61a6fe37/0/content_hash.txt",
+      "prompt": "/9b/9e61a6fe37/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 169,
+    "cache_creation_tokens": 102166,
+    "cache_read_tokens": 5378494,
+    "output_tokens": 28904,
+    "api_call_count": 70
+  }
+}

@@ -1,0 +1,63 @@
+make a README
+
+---
+
+https://www.florent.vc/hackathon-panathenea based on that check what else could we do? we need a strong mvp in 2 hours max. zoning is not what we expected so it may be removed. tell us ideas on what to build
+
+---
+
+go with 1, build it
+
+---
+
+let's test it, start the server
+
+---
+
+check the .env file, I think I have one
+
+---
+
+are there any free api keys to use for free to run the demo?
+
+---
+
+gemini, grok etc..
+
+---
+
+I have it, export REDACTED
+
+---
+
+<task-notification>
+<task-id>b9u2qntvc</task-id>
+<tool-use-id>toolu_01BoNfQuC7AB2oZGuD9BzUPU</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-manos-dam-zone01-panathenea-hackathon/221ddd5e-6090-4ec5-b441-a5525fd4ea4c/tasks/b9u2qntvc.output</output-file>
+<status>completed</status>
+<summary>Background command "Start FastAPI dev server on port 8000" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-manos-dam-zone01-panathenea-hackathon/221ddd5e-6090-4ec5-b441-a5525fd4ea4c/tasks/b9u2qntvc.output
+
+---
+
+it doesnt work. why?
+
+---
+
+what other information can we add? these are very few and not usefull for a proffesional.
+
+---
+
+<task-notification>
+<task-id>be5zrtl9e</task-id>
+<tool-use-id>toolu_01BKYiUKuNaMKAPAmJbVsBn8</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-manos-dam-zone01-panathenea-hackathon/221ddd5e-6090-4ec5-b441-a5525fd4ea4c/tasks/be5zrtl9e.output</output-file>
+<status>completed</status>
+<summary>Background command "Restart server with Gemini API key" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-manos-dam-zone01-panathenea-hackathon/221ddd5e-6090-4ec5-b441-a5525fd4ea4c/tasks/be5zrtl9e.output
+
+---
+
+those infos are useless. we need real data on building permits etc. what could we fetch to add to report?
