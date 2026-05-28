@@ -1,0 +1,56 @@
+{
+  "cli_version": "0.6.3",
+  "checkpoint_id": "d917ba64db7c",
+  "session_id": "c6e1d095-a687-436d-83b2-1fec55f2ac39",
+  "strategy": "manual-commit",
+  "created_at": "2026-05-28T09:56:21.777246Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "backend/data/zoning_rules.json",
+    "backend/routers/zoning_checker.py",
+    "index.html",
+    "tests/test_static_data.py",
+    "tests/test_zoning_router.py"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-6",
+  "turn_id": "12c5edb4e101",
+  "checkpoint_transcript_start": 471,
+  "transcript_lines_at_start": 471,
+  "token_usage": {
+    "input_tokens": 15,
+    "cache_creation_tokens": 9045,
+    "cache_read_tokens": 1036575,
+    "output_tokens": 1939,
+    "api_call_count": 7
+  },
+  "session_metrics": {
+    "turn_count": 13
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-05-28T09:56:21.7125Z",
+    "agent_lines": 109,
+    "agent_removed": 9,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 109,
+    "total_lines_changed": 118,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 36,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 12,
+        "cood.txt": 24
+      }
+    }
+  ]
+}
