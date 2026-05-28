@@ -15,3 +15,7 @@ https://20.95.103.179/idocs-nph/search/fekForm.html?query=ΦΕΚ%20166/Δ/1987
 ---
 
 now it just drove me to https://search.et.gr/el/?q=ΦΕΚ%20166%2FΔ%2F1987 search page. i need the result
+
+---
+
+push progress
