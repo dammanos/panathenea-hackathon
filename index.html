@@ -510,8 +510,9 @@ a.fek-link:hover { text-decoration: underline; }
       <div id="convert-manual-mode">
         <div class="points-list" id="convert-points-list">
           <div class="point-row">
-            <input type="text" id="convert-coord1-0" placeholder="X / Lat / Lon">
-            <input type="text" id="convert-coord2-0" placeholder="Y / Lon / Lat">
+            <input type="text" class="point-name" placeholder="Name" style="max-width:80px;">
+            <input type="text" placeholder="X / Lat / Lon">
+            <input type="text" placeholder="Y / Lon / Lat">
             <button class="remove-btn" onclick="removeConvertPoint(this)" title="Remove">&times;</button>
           </div>
         </div>
@@ -1116,7 +1117,7 @@ function addConvertPoint() {
   const idx = list.children.length;
   const row = document.createElement('div');
   row.className = 'point-row';
-  row.innerHTML = '<input type="text" placeholder="X / Lat / Lon"><input type="text" placeholder="Y / Lon / Lat"><button class="remove-btn" onclick="removeConvertPoint(this)">&times;</button>';
+  row.innerHTML = '<input type="text" class="point-name" placeholder="Name" style="max-width:80px;"><input type="text" placeholder="X / Lat / Lon"><input type="text" placeholder="Y / Lon / Lat"><button class="remove-btn" onclick="removeConvertPoint(this)">&times;</button>';
   list.appendChild(row);
   document.getElementById('convert-point-counter').textContent = list.children.length;
 }
@@ -1135,16 +1136,17 @@ function doConvert() {
   const rows = document.querySelectorAll('#convert-points-list .point-row');
   convertData = [];
 
-  rows.forEach(row => {
+  rows.forEach((row, idx) => {
     const inputs = row.querySelectorAll('input');
-    const v1s = inputs[0].value.trim(), v2s = inputs[1].value.trim();
+    const name = inputs[0].value.trim() || String(idx + 1);
+    const v1s = inputs[1].value.trim(), v2s = inputs[2].value.trim();
     if (!v1s || !v2s) return;
     const v1 = sys === 'wgs84_dms' ? v1s : parseFloat(v1s);
     const v2 = sys === 'wgs84_dms' ? v2s : parseFloat(v2s);
     if (sys !== 'wgs84_dms' && (isNaN(v1) || isNaN(v2))) return;
     const [gLat, gLon] = inputToGgrs87Geo(sys, v1, v2);
     const all = ggrs87GeoToAll(gLat, gLon);
-    convertData.push({ input: [v1, v2], all });
+    convertData.push({ name, input: [v1, v2], all });
   });
 
   if (convertData.length === 0) { showToast(t('no_coords')); return; }
@@ -1171,7 +1173,7 @@ function renderConvertResults(outSys) {
     tm07: ['TM07 X','TM07 Y'],
   };
 
-  let hdr = '<thead><tr><th>#</th><th class="col-input">Input 1</th><th class="col-input">Input 2</th>';
+  let hdr = '<thead><tr><th>Name</th><th class="col-input">Input 1</th><th class="col-input">Input 2</th>';
   systems.forEach(s => { hdr += `<th class="col-output">${sysLabels[s][0]}</th><th class="col-output">${sysLabels[s][1]}</th>`; });
   hdr += '</tr></thead>';
 
@@ -1179,7 +1181,7 @@ function renderConvertResults(outSys) {
   const max = Math.min(convertData.length, 500);
   for (let i = 0; i < max; i++) {
     const d = convertData[i];
-    body += `<tr><td>${i+1}</td><td class="col-input">${escapeHtml(String(d.input[0]))}</td><td class="col-input">${escapeHtml(String(d.input[1]))}</td>`;
+    body += `<tr><td>${escapeHtml(d.name)}</td><td class="col-input">${escapeHtml(String(d.input[0]))}</td><td class="col-input">${escapeHtml(String(d.input[1]))}</td>`;
     systems.forEach(s => {
       const o = d.all[s];
       if (s === 'wgs84_dms') {
@@ -1219,14 +1221,27 @@ function parseBulkCoordinates(text, inputSystem) {
     start = 1;
   }
 
+  // Detect if first column is a name/label (3+ columns where col[0] is name, col[1] & col[2] are numeric)
+  const sampleParts = typeof delim === 'string' ? lines[start].split(delim).map(s => s.trim()) : lines[start].trim().split(delim).map(s => s.trim());
+  const hasNameCol = sampleParts.length >= 3 && !isNaN(parseFloat(sampleParts[1])) && !isNaN(parseFloat(sampleParts[2]));
+
   const points = [];
   for (let i = start; i < lines.length; i++) {
     const parts = typeof delim === 'string' ? lines[i].split(delim).map(s => s.trim()) : lines[i].trim().split(delim).map(s => s.trim());
-    if (parts.length < 2) continue;
-    const v1 = inputSystem === 'wgs84_dms' ? parts[0] : parseFloat(parts[0]);
-    const v2 = inputSystem === 'wgs84_dms' ? parts[1] : parseFloat(parts[1]);
-    if (inputSystem !== 'wgs84_dms' && (isNaN(v1) || isNaN(v2))) continue;
-    points.push([v1, v2]);
+    if (hasNameCol) {
+      if (parts.length < 3) continue;
+      const name = parts[0];
+      const v1 = inputSystem === 'wgs84_dms' ? parts[1] : parseFloat(parts[1]);
+      const v2 = inputSystem === 'wgs84_dms' ? parts[2] : parseFloat(parts[2]);
+      if (inputSystem !== 'wgs84_dms' && (isNaN(v1) || isNaN(v2))) continue;
+      points.push([v1, v2, name]);
+    } else {
+      if (parts.length < 2) continue;
+      const v1 = inputSystem === 'wgs84_dms' ? parts[0] : parseFloat(parts[0]);
+      const v2 = inputSystem === 'wgs84_dms' ? parts[1] : parseFloat(parts[1]);
+      if (inputSystem !== 'wgs84_dms' && (isNaN(v1) || isNaN(v2))) continue;
+      points.push([v1, v2, null]);
+    }
   }
   return points;
 }
@@ -1253,9 +1268,9 @@ function handleConvertFile(event) {
     const points = parseBulkCoordinates(e.target.result, sys);
     if (points.length === 0) { showToast(t('no_coords')); return; }
 
-    convertData = points.map(([v1, v2]) => {
+    convertData = points.map(([v1, v2, name], idx) => {
       const [gLat, gLon] = inputToGgrs87Geo(sys, v1, v2);
-      return { input: [v1, v2], all: ggrs87GeoToAll(gLat, gLon) };
+      return { name: name || String(idx + 1), input: [v1, v2], all: ggrs87GeoToAll(gLat, gLon) };
     });
 
     showToast(points.length + ' ' + t('file_parsed'));
@@ -1276,7 +1291,7 @@ function handleAreaFile(event) {
     // Fill the manual points list
     const list = document.getElementById('area-points-list');
     list.innerHTML = '';
-    points.forEach(([v1, v2]) => {
+    points.forEach(([v1, v2, name]) => {
       const row = document.createElement('div');
       row.className = 'point-row';
       row.innerHTML = `<input type="text" value="${v1}"><input type="text" value="${v2}"><button class="remove-btn" onclick="removeAreaPoint(this)">&times;</button>`;
@@ -1297,11 +1312,11 @@ function exportConvertCSV() {
   if (!convertData.length) return;
   const outSys = document.getElementById('convert-output-system').value;
   const systems = outSys === 'all' ? ['egsa87','wgs84_dd','wgs84_dms','ggrs87_geo','htrs07_geo','tm07'] : [outSys];
-  let csv = 'Input1,Input2';
+  let csv = 'Name,Input1,Input2';
   systems.forEach(s => { csv += `,${s}_1,${s}_2`; });
   csv += '\n';
   convertData.forEach(d => {
-    csv += `${d.input[0]},${d.input[1]}`;
+    csv += `${d.name},${d.input[0]},${d.input[1]}`;
     systems.forEach(s => {
       const o = d.all[s];
       if (s === 'wgs84_dms') csv += `,"${o.lat}","${o.lon}"`;
@@ -1317,11 +1332,11 @@ function exportConvertXLSX() {
   if (!convertData.length) return;
   const outSys = document.getElementById('convert-output-system').value;
   const systems = outSys === 'all' ? ['egsa87','wgs84_dd','wgs84_dms','ggrs87_geo','htrs07_geo','tm07'] : [outSys];
-  let tsv = '\uFEFFInput1\tInput2';
+  let tsv = '\uFEFFName\tInput1\tInput2';
   systems.forEach(s => { tsv += `\t${s}_1\t${s}_2`; });
   tsv += '\n';
   convertData.forEach(d => {
-    tsv += `${d.input[0]}\t${d.input[1]}`;
+    tsv += `${d.name}\t${d.input[0]}\t${d.input[1]}`;
     systems.forEach(s => {
       const o = d.all[s];
       if (s === 'wgs84_dms') tsv += `\t${o.lat}\t${o.lon}`;
