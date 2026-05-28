@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="el" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TopoTools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+/* ========================================================================
+   CSS CUSTOM PROPERTIES
+   ======================================================================== */
+:root,
+html[data-theme="dark"] {
+  --bg: #0f1117;
+  --surface: #181c27;
+  --surface2: #1e2233;
+  --border: #2a2f42;
+  --text: #e4e7ef;
+  --muted: #8890a4;
+  --accent: #2563eb;
+  --accent2: #0891b2;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --red: #ef4444;
+  --grid-color: rgba(37, 99, 235, 0.06);
+  --shadow: 0 2px 12px rgba(0,0,0,0.3);
+  --input-bg: #141722;
+  --input-border: #2a2f42;
+}
+
+html[data-theme="light"] {
+  --bg: #f5f6fa;
+  --surface: #ffffff;
+  --surface2: #f0f1f5;
+  --border: #d1d5e0;
+  --text: #1a1c24;
+  --muted: #5f6780;
+  --accent: #2563eb;
+  --accent2: #0891b2;
+  --green: #16a34a;
+  --yellow: #ca8a04;
+  --red: #dc2626;
+  --grid-color: rgba(37, 99, 235, 0.05);
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --input-bg: #ffffff;
+  --input-border: #d1d5e0;
+}
+
+/* ========================================================================
+   RESET & BASE
+   ======================================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ========================================================================
+   LAYOUT
+   ======================================================================== */
+.container {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ========================================================================
+   HEADER
+   ======================================================================== */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.logo {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 700; font-size: 18px; color: #fff;
+  flex-shrink: 0;
+}
+
+.header-title {
+  font-size: 22px; font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.version-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; padding: 2px 8px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 20px; color: var(--muted);
+}
+
+.header-actions {
+  margin-left: auto;
+  display: flex; gap: 8px; align-items: center;
+}
+
+.header-btn {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); border-radius: 8px; padding: 6px 12px;
+  font-size: 13px; cursor: pointer; font-family: 'IBM Plex Mono', monospace;
+  transition: background 0.2s;
+}
+.header-btn:hover { background: var(--surface2); }
+
+/* ========================================================================
+   TAB BAR
+   ======================================================================== */
+.tab-bar {
+  display: flex; gap: 6px; margin-bottom: 20px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 4px;
+}
+
+.tab-btn {
+  flex: 1; padding: 10px 16px;
+  background: transparent; border: none; border-radius: 8px;
+  color: var(--muted); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+}
+.tab-btn:not(.active):hover { color: var(--text); background: var(--surface2); }
+
+/* ========================================================================
+   CARDS
+   ======================================================================== */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+.card-title {
+  font-size: 15px; font-weight: 600; margin-bottom: 12px;
+  color: var(--text);
+}
+
+/* ========================================================================
+   FORM ELEMENTS
+   ======================================================================== */
+label {
+  display: block; font-size: 13px; font-weight: 500;
+  color: var(--muted); margin-bottom: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+select, input[type="text"], input[type="number"] {
+  width: 100%; padding: 10px 12px;
+  background: var(--input-bg); border: 1px solid var(--input-border);
+  border-radius: 8px; color: var(--text); font-size: 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  transition: border-color 0.2s;
+}
+select:focus, input:focus { outline: none; border-color: var(--accent); }
+
+.input-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  margin-bottom: 10px;
+}
+
+.input-group { margin-bottom: 10px; }
+
+.btn {
+  width: 100%; padding: 12px 20px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none; border-radius: 8px; color: #fff;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+  transition: opacity 0.2s;
+}
+.btn:hover { opacity: 0.9; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.btn-sm { padding: 6px 14px; font-size: 13px; width: auto; }
+
+/* ========================================================================
+   INPUT MODE TOGGLE
+   ======================================================================== */
+.input-mode-toggle {
+  display: flex; gap: 4px; margin-bottom: 12px;
+  background: var(--surface2); border-radius: 8px; padding: 3px;
+}
+
+.input-mode-btn {
+  flex: 1; padding: 6px 12px; border: none; border-radius: 6px;
+  background: transparent; color: var(--muted); font-size: 13px;
+  cursor: pointer; font-weight: 500; transition: all 0.2s;
+}
+.input-mode-btn.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+
+/* ========================================================================
+   FILE DROP ZONE
+   ======================================================================== */
+.drop-zone {
+  border: 2px dashed var(--border); border-radius: 12px;
+  padding: 30px; text-align: center; color: var(--muted);
+  cursor: pointer; transition: border-color 0.2s;
+  margin-bottom: 12px;
+}
+.drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); color: var(--accent); }
+
+/* ========================================================================
+   RESULTS TABLE
+   ======================================================================== */
+.results-table-wrap {
+  overflow-x: auto; max-height: 400px; overflow-y: auto;
+  border: 1px solid var(--border); border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.results-table {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.results-table th {
+  position: sticky; top: 0; background: var(--surface2);
+  padding: 8px 10px; text-align: left; font-weight: 600;
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.results-table td {
+  padding: 6px 10px; border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.results-table tr:last-child td { border-bottom: none; }
+
+.col-input { background: rgba(37, 99, 235, 0.05); }
+.col-output { background: rgba(34, 197, 94, 0.05); }
+
+/* ========================================================================
+   POINTS LIST
+   ======================================================================== */
+.points-list { margin-bottom: 12px; }
+
+.point-row {
+  display: flex; gap: 8px; align-items: center; margin-bottom: 6px;
+}
+.point-row input { flex: 1; }
+
+.point-row .remove-btn {
+  width: 32px; height: 32px; border: 1px solid var(--border);
+  border-radius: 6px; background: var(--surface2); color: var(--red);
+  cursor: pointer; font-size: 16px; display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+.point-counter {
+  display: inline-block; background: var(--accent);
+  color: #fff; border-radius: 12px; padding: 1px 8px;
+  font-size: 12px; font-family: 'IBM Plex Mono', monospace;
+  margin-left: 8px;
+}
+
+/* ========================================================================
+   AREA RESULT
+   ======================================================================== */
+.area-big {
+  font-size: 28px; font-weight: 700; color: var(--green);
+  font-family: 'IBM Plex Mono', monospace;
+  margin-bottom: 4px;
+}
+.area-sub {
+  font-size: 14px; color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* ========================================================================
+   ZONING VERDICT
+   ======================================================================== */
+.verdict-card {
+  padding: 16px 20px; border-radius: 10px; margin-bottom: 16px;
+  font-size: 16px; font-weight: 600;
+}
+.verdict-green { background: rgba(34, 197, 94, 0.1); border: 1px solid var(--green); color: var(--green); }
+.verdict-yellow { background: rgba(234, 179, 8, 0.1); border: 1px solid var(--yellow); color: var(--yellow); }
+.verdict-red { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--red); color: var(--red); }
+
+.meta-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+  margin-bottom: 16px;
+}
+.meta-item label { font-size: 11px; margin-bottom: 2px; }
+.meta-item .meta-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px; font-weight: 500;
+}
+
+.risk-flag {
+  padding: 12px; border-radius: 8px; margin-bottom: 8px;
+  background: var(--surface2); border: 1px solid var(--border);
+}
+.risk-flag-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.risk-badge {
+  font-size: 11px; padding: 2px 8px; border-radius: 10px;
+  font-weight: 600; font-family: 'IBM Plex Mono', monospace;
+}
+.risk-badge.high { background: rgba(239,68,68,0.15); color: var(--red); }
+.risk-badge.medium { background: rgba(234,179,8,0.15); color: var(--yellow); }
+.risk-badge.low { background: rgba(34,197,94,0.15); color: var(--green); }
+
+.params-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin-bottom: 12px;
+}
+.param-item {
+  background: var(--surface2); padding: 10px; border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.param-item label { font-size: 11px; }
+.param-item .param-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 15px; font-weight: 600;
+}
+
+.data-source {
+  font-size: 12px; color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  margin-bottom: 8px;
+}
+
+.disclaimer {
+  font-size: 12px; color: var(--muted);
+  font-style: italic; padding: 10px;
+  background: var(--surface2); border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+/* ========================================================================
+   MAP
+   ======================================================================== */
+.map-container {
+  height: 300px; border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--border); margin-bottom: 12px;
+}
+
+/* ========================================================================
+   SPINNER
+   ======================================================================== */
+.spinner {
+  display: none; text-align: center; padding: 20px;
+}
+.spinner.active { display: block; }
+.spinner::after {
+  content: ''; display: inline-block; width: 32px; height: 32px;
+  border: 3px solid var(--border); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ========================================================================
+   TOAST
+   ======================================================================== */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); padding: 12px 20px; border-radius: 10px;
+  box-shadow: var(--shadow); font-size: 14px;
+  opacity: 0; transition: opacity 0.3s; pointer-events: none;
+}
+.toast.show { opacity: 1; pointer-events: auto; }
+
+/* ========================================================================
+   ADDRESS LINE
+   ======================================================================== */
+.address-line {
+  font-size: 13px; color: var(--muted); margin-bottom: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* ========================================================================
+   EXPORT BAR
+   ======================================================================== */
+.export-bar {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
+}
+
+/* ========================================================================
+   TAB PANELS
+   ======================================================================== */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ========================================================================
+   FEK LINK
+   ======================================================================== */
+a.fek-link { color: var(--accent); text-decoration: none; }
+a.fek-link:hover { text-decoration: underline; }
+
+/* ========================================================================
+   RESPONSIVE
+   ======================================================================== */
+@media (max-width: 680px) {
+  .header { gap: 8px; }
+  .header-title { font-size: 18px; }
+  .meta-grid { grid-template-columns: 1fr 1fr; }
+  .params-grid { grid-template-columns: 1fr; }
+  .input-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 460px) {
+  .container { padding: 12px 8px 40px; }
+  .tab-btn { font-size: 12px; padding: 8px 8px; }
+  .meta-grid { grid-template-columns: 1fr; }
+  .header-actions { margin-left: 0; width: 100%; justify-content: flex-end; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- ===== HEADER ===== -->
+  <div class="header">
+    <div class="logo">TT</div>
+    <span class="header-title">TopoTools</span>
+    <span class="version-badge">v1.0</span>
+    <div class="header-actions">
+      <button class="header-btn" id="lang-toggle" onclick="toggleLanguage()">EN</button>
+      <button class="header-btn" id="theme-toggle" onclick="toggleTheme()">&#9788;</button>
+    </div>
+  </div>
+
+  <!-- ===== TAB BAR ===== -->
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="convert" data-i18n="tab_convert" onclick="switchTab('convert')">Convert</button>
+    <button class="tab-btn" data-tab="area" data-i18n="tab_area" onclick="switchTab('area')">Area</button>
+    <button class="tab-btn" data-tab="zoning" data-i18n="tab_zoning" onclick="switchTab('zoning')">Zoning</button>
+  </div>
+
+  <!-- ===== TAB 1: CONVERT ===== -->
+  <div class="tab-panel active" id="tab-convert">
+    <div class="card">
+      <div class="card-title" data-i18n="convert_title">Coordinate Converter</div>
+
+      <div class="input-row">
+        <div class="input-group">
+          <label data-i18n="input_system">Input System</label>
+          <select id="convert-input-system" onchange="updateConvertInputFields()">
+            <option value="egsa87">EGSA87</option>
+            <option value="wgs84_dd">WGS84 DD</option>
+            <option value="wgs84_dms">WGS84 DMS</option>
+            <option value="ggrs87_geo">GGRS87 Geographic</option>
+            <option value="htrs07_geo">HTRS07 Geographic</option>
+            <option value="tm07">TM07</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label data-i18n="output_system">Output System</label>
+          <select id="convert-output-system">
+            <option value="all" data-i18n="all_systems">All Systems</option>
+            <option value="egsa87">EGSA87</option>
+            <option value="wgs84_dd">WGS84 DD</option>
+            <option value="wgs84_dms">WGS84 DMS</option>
+            <option value="ggrs87_geo">GGRS87 Geographic</option>
+            <option value="htrs07_geo">HTRS07 Geographic</option>
+            <option value="tm07">TM07</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Input mode toggle -->
+      <div class="input-mode-toggle" id="convert-mode-toggle">
+        <button class="input-mode-btn active" data-mode="manual" onclick="switchInputMode('convert','manual')" data-i18n="manual_entry">Manual Entry</button>
+        <button class="input-mode-btn" data-mode="file" onclick="switchInputMode('convert','file')" data-i18n="file_upload">File Upload</button>
+      </div>
+
+      <!-- Manual entry -->
+      <div id="convert-manual-mode">
+        <div class="points-list" id="convert-points-list">
+          <div class="point-row">
+            <input type="text" id="convert-coord1-0" placeholder="X / Lat / Lon">
+            <input type="text" id="convert-coord2-0" placeholder="Y / Lon / Lat">
+            <button class="remove-btn" onclick="removeConvertPoint(this)" title="Remove">&times;</button>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <button class="btn btn-secondary btn-sm" onclick="addConvertPoint()" data-i18n="add_point">+ Add Point</button>
+          <span class="point-counter" id="convert-point-counter">1</span>
+        </div>
+        <button class="btn" onclick="doConvert()" data-i18n="convert_btn">CONVERT</button>
+      </div>
+
+      <!-- File upload -->
+      <div id="convert-file-mode" style="display:none;">
+        <div class="drop-zone" id="convert-drop-zone" data-i18n="drop_zone_text">
+          Drop .txt / .csv / .tsv file here or click to browse
+        </div>
+        <input type="file" id="convert-file-input" accept=".txt,.csv,.tsv" style="display:none;" onchange="handleConvertFile(event)">
+      </div>
+    </div>
+
+    <!-- Convert results -->
+    <div id="convert-results" style="display:none;">
+      <div class="card">
+        <div class="card-title" data-i18n="results">Results</div>
+        <div class="address-line" id="convert-address"></div>
+        <div class="results-table-wrap">
+          <table class="results-table" id="convert-results-table"></table>
+        </div>
+        <div class="export-bar">
+          <button class="btn btn-secondary btn-sm" onclick="exportConvertCSV()" data-i18n="download_csv">Download CSV</button>
+          <button class="btn btn-secondary btn-sm" onclick="exportConvertXLSX()" data-i18n="export_xlsx">Export XLSX</button>
+          <button class="btn btn-secondary btn-sm" onclick="copyConvertTable()" data-i18n="copy_table">Copy Table</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 2: AREA ===== -->
+  <div class="tab-panel" id="tab-area">
+    <div class="card">
+      <div class="card-title" data-i18n="area_title">Polygon Area Calculator</div>
+
+      <div class="input-group">
+        <label data-i18n="coord_system">Coordinate System</label>
+        <select id="area-input-system">
+          <option value="egsa87">EGSA87</option>
+          <option value="wgs84_dd">WGS84 DD</option>
+          <option value="wgs84_dms">WGS84 DMS</option>
+          <option value="ggrs87_geo">GGRS87 Geographic</option>
+          <option value="htrs07_geo">HTRS07 Geographic</option>
+          <option value="tm07">TM07</option>
+        </select>
+      </div>
+
+      <div class="input-mode-toggle" id="area-mode-toggle">
+        <button class="input-mode-btn active" data-mode="manual" onclick="switchInputMode('area','manual')" data-i18n="manual_entry">Manual Entry</button>
+        <button class="input-mode-btn" data-mode="file" onclick="switchInputMode('area','file')" data-i18n="file_upload">File Upload</button>
+      </div>
+
+      <div id="area-manual-mode">
+        <div class="points-list" id="area-points-list">
+          <div class="point-row">
+            <input type="text" placeholder="X / Lat"><input type="text" placeholder="Y / Lon">
+            <button class="remove-btn" onclick="removeAreaPoint(this)">&times;</button>
+          </div>
+          <div class="point-row">
+            <input type="text" placeholder="X / Lat"><input type="text" placeholder="Y / Lon">
+            <button class="remove-btn" onclick="removeAreaPoint(this)">&times;</button>
+          </div>
+          <div class="point-row">
+            <input type="text" placeholder="X / Lat"><input type="text" placeholder="Y / Lon">
+            <button class="remove-btn" onclick="removeAreaPoint(this)">&times;</button>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <button class="btn btn-secondary btn-sm" onclick="addAreaPoint()" data-i18n="add_point">+ Add Point</button>
+          <span class="point-counter" id="area-point-counter">3</span>
+        </div>
+        <button class="btn" onclick="doCalculateArea()" data-i18n="calc_area_btn">CALCULATE AREA</button>
+      </div>
+
+      <div id="area-file-mode" style="display:none;">
+        <div class="drop-zone" id="area-drop-zone" data-i18n="drop_zone_text">
+          Drop .txt / .csv / .tsv file here or click to browse
+        </div>
+        <input type="file" id="area-file-input" accept=".txt,.csv,.tsv" style="display:none;" onchange="handleAreaFile(event)">
+      </div>
+    </div>
+
+    <div id="area-results" style="display:none;">
+      <div class="card">
+        <div class="card-title" data-i18n="area_result">Area Result</div>
+        <div class="address-line" id="area-address"></div>
+        <div class="area-big" id="area-m2"></div>
+        <div class="area-sub" id="area-extra"></div>
+        <div class="map-container" id="area-map"></div>
+        <div class="results-table-wrap">
+          <table class="results-table" id="area-egsa-table"></table>
+        </div>
+        <div class="export-bar">
+          <button class="btn btn-secondary btn-sm" onclick="copyAreaResult()" data-i18n="copy_result">Copy Result</button>
+          <button class="btn btn-secondary btn-sm" onclick="exportAreaCSV()" data-i18n="download_csv">Download CSV</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 3: ZONING ===== -->
+  <div class="tab-panel" id="tab-zoning">
+    <div class="card">
+      <div class="card-title" data-i18n="zoning_title">Zoning Check</div>
+
+      <!-- KAEK lookup -->
+      <div class="input-group">
+        <label>KAEK</label>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="zoning-kaek" placeholder="e.g. 050461527012" style="flex:1;">
+          <button class="btn btn-sm" style="width:auto;" onclick="doKaekLookup()" data-i18n="find_btn">FIND</button>
+        </div>
+      </div>
+
+      <hr style="border:none; border-top:1px solid var(--border); margin:16px 0;">
+
+      <!-- Coord system toggle -->
+      <div class="input-group">
+        <label data-i18n="coord_system">Coordinate System</label>
+        <select id="zoning-coord-system" onchange="updateZoningInputFields()">
+          <option value="egsa87">EGSA87</option>
+          <option value="wgs84">WGS84</option>
+        </select>
+      </div>
+
+      <div id="zoning-egsa-fields" class="input-row">
+        <div class="input-group"><label>X (Easting)</label><input type="number" id="zoning-x" step="any"></div>
+        <div class="input-group"><label>Y (Northing)</label><input type="number" id="zoning-y" step="any"></div>
+      </div>
+      <div id="zoning-wgs-fields" class="input-row" style="display:none;">
+        <div class="input-group"><label>Latitude</label><input type="number" id="zoning-lat" step="any"></div>
+        <div class="input-group"><label>Longitude</label><input type="number" id="zoning-lon" step="any"></div>
+      </div>
+
+      <div class="input-row">
+        <div class="input-group">
+          <label data-i18n="intended_use">Intended Use</label>
+          <select id="zoning-use">
+            <option value="residential" data-i18n="use_residential">Residential</option>
+            <option value="commercial" data-i18n="use_commercial">Commercial</option>
+            <option value="industrial" data-i18n="use_industrial">Industrial</option>
+            <option value="agricultural" data-i18n="use_agricultural">Agricultural</option>
+            <option value="tourism" data-i18n="use_tourism">Tourism</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label data-i18n="plot_area">Plot Area (m2, optional)</label>
+          <input type="number" id="zoning-area" step="any">
+        </div>
+      </div>
+
+      <button class="btn" onclick="doZoningCheck()" data-i18n="check_zoning_btn">CHECK ZONING</button>
+    </div>
+
+    <div class="spinner" id="zoning-spinner"></div>
+
+    <div id="zoning-results" style="display:none;">
+      <div id="zoning-verdict-card"></div>
+
+      <div class="card">
+        <div class="meta-grid" id="zoning-meta"></div>
+        <div id="zoning-risk-flags"></div>
+
+        <div class="card-title" data-i18n="building_params">Building Parameters</div>
+        <div class="params-grid" id="zoning-params"></div>
+
+        <div class="map-container" id="zoning-map"></div>
+        <div class="address-line" id="zoning-address"></div>
+        <div class="data-source" id="zoning-data-source"></div>
+        <div class="disclaimer" id="zoning-disclaimer"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ========================================================================
+   i18n
+   ======================================================================== */
+const translations = {
+  el: {
+    tab_convert: "Μετατροπή", tab_area: "Εμβαδόν", tab_zoning: "Πολεοδομία",
+    convert_title: "Μετατροπή Συντεταγμένων",
+    input_system: "Σύστημα Εισόδου", output_system: "Σύστημα Εξόδου",
+    all_systems: "Όλα τα Συστήματα",
+    manual_entry: "Χειροκίνητη Εισαγωγή", file_upload: "Αρχείο",
+    add_point: "+ Σημείο", convert_btn: "ΜΕΤΑΤΡΟΠΗ",
+    drop_zone_text: "Σύρετε αρχείο .txt / .csv / .tsv εδώ ή κάντε κλικ",
+    results: "Αποτελέσματα",
+    download_csv: "Λήψη CSV", export_xlsx: "Εξαγωγή XLSX", copy_table: "Αντιγραφή",
+    area_title: "Υπολογιστής Εμβαδού Πολυγώνου",
+    coord_system: "Σύστημα Συντεταγμένων",
+    calc_area_btn: "ΥΠΟΛΟΓΙΣΜΟΣ ΕΜΒΑΔΟΥ",
+    area_result: "Αποτέλεσμα Εμβαδού",
+    copy_result: "Αντιγραφή Αποτελέσματος",
+    zoning_title: "Έλεγχος Πολεοδομίας",
+    find_btn: "ΑΝΑΖΗΤΗΣΗ",
+    intended_use: "Προβλεπόμενη Χρήση",
+    use_residential: "Κατοικία", use_commercial: "Εμπορική",
+    use_industrial: "Βιομηχανική", use_agricultural: "Αγροτική", use_tourism: "Τουρισμός",
+    plot_area: "Εμβαδόν Οικοπέδου (m², προαιρ.)",
+    check_zoning_btn: "ΕΛΕΓΧΟΣ ΠΟΛΕΟΔΟΜΙΑΣ",
+    building_params: "Πολεοδομικά Δεδομένα",
+    verdict_green: "Δεν βρέθηκαν σημαντικοί περιορισμοί.",
+    verdict_yellow: "Βρέθηκαν ανησυχίες. Απαιτείται περαιτέρω διερεύνηση.",
+    verdict_red: "Βρέθηκαν σημαντικοί περιορισμοί. Η ανάπτυξη ενδέχεται να περιοριστεί.",
+    municipality_label: "Δήμος", land_use_label: "Χρήση Γης", zone_label: "Ζώνη",
+    coverage_label: "Κάλυψη %", factor_label: "Σ.Δ.", height_label: "Ύψος (m)",
+    floors_label: "Όροφοι", min_lot_label: "Ελάχ. Οικόπεδο (m²)",
+    frontage_label: "Πρόσοψη (m)", building_sys_label: "Σύστημα Δόμησης",
+    fek_label: "ΦΕΚ",
+    hectares: "εκτάρια", stremma: "στρέμματα",
+    address_label: "Διεύθυνση",
+    no_coords: "Παρακαλώ εισάγετε συντεταγμένες.",
+    kaek_not_found: "Δεν βρέθηκε τεμάχιο με αυτό το ΚΑΕΚ.",
+    copied: "Αντιγράφηκε!",
+    min_points: "Απαιτούνται τουλάχιστον 3 σημεία.",
+    file_parsed: "σημεία φορτώθηκαν από το αρχείο",
+  },
+  en: {
+    tab_convert: "Convert", tab_area: "Area", tab_zoning: "Zoning",
+    convert_title: "Coordinate Converter",
+    input_system: "Input System", output_system: "Output System",
+    all_systems: "All Systems",
+    manual_entry: "Manual Entry", file_upload: "File Upload",
+    add_point: "+ Add Point", convert_btn: "CONVERT",
+    drop_zone_text: "Drop .txt / .csv / .tsv file here or click to browse",
+    results: "Results",
+    download_csv: "Download CSV", export_xlsx: "Export XLSX", copy_table: "Copy Table",
+    area_title: "Polygon Area Calculator",
+    coord_system: "Coordinate System",
+    calc_area_btn: "CALCULATE AREA",
+    area_result: "Area Result",
+    copy_result: "Copy Result",
+    zoning_title: "Zoning Check",
+    find_btn: "FIND",
+    intended_use: "Intended Use",
+    use_residential: "Residential", use_commercial: "Commercial",
+    use_industrial: "Industrial", use_agricultural: "Agricultural", use_tourism: "Tourism",
+    plot_area: "Plot Area (m², optional)",
+    check_zoning_btn: "CHECK ZONING",
+    building_params: "Building Parameters",
+    verdict_green: "No significant restrictions found.",
+    verdict_yellow: "Minor concerns found. Further investigation recommended.",
+    verdict_red: "Significant restrictions found. Development may be restricted.",
+    municipality_label: "Municipality", land_use_label: "Land Use", zone_label: "Zone",
+    coverage_label: "Coverage %", factor_label: "Building Factor", height_label: "Height (m)",
+    floors_label: "Floors", min_lot_label: "Min Lot (m²)",
+    frontage_label: "Frontage (m)", building_sys_label: "Building System",
+    fek_label: "FEK",
+    hectares: "hectares", stremma: "stremma",
+    address_label: "Address",
+    no_coords: "Please enter coordinates.",
+    kaek_not_found: "No parcel found for this KAEK.",
+    copied: "Copied!",
+    min_points: "At least 3 points are required.",
+    file_parsed: "points loaded from file",
+  }
+};
+
+let currentLang = localStorage.getItem('topotools-lang') || 'el';
+
+function t(key) { return (translations[currentLang] && translations[currentLang][key]) || key; }
+
+function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('topotools-lang', lang);
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (translations[lang] && translations[lang][key]) el.textContent = translations[lang][key];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const key = el.getAttribute('data-i18n-html');
+    if (translations[lang] && translations[lang][key]) el.innerHTML = translations[lang][key];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (translations[lang] && translations[lang][key]) el.placeholder = translations[lang][key];
+  });
+  document.getElementById('lang-toggle').textContent = lang === 'el' ? 'EN' : 'EL';
+}
+
+function toggleLanguage() {
+  setLanguage(currentLang === 'el' ? 'en' : 'el');
+}
+
+/* ========================================================================
+   THEME
+   ======================================================================== */
+let currentTheme = localStorage.getItem('topotools-theme') || 'dark';
+document.documentElement.setAttribute('data-theme', currentTheme);
+
+function toggleTheme() {
+  currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  localStorage.setItem('topotools-theme', currentTheme);
+  document.getElementById('theme-toggle').innerHTML = currentTheme === 'dark' ? '&#9788;' : '&#9790;';
+}
+
+/* ========================================================================
+   TAB SWITCHING
+   ======================================================================== */
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
+}
+
+/* ========================================================================
+   INPUT MODE SWITCHING
+   ======================================================================== */
+function switchInputMode(tabPrefix, mode) {
+  const toggle = document.getElementById(tabPrefix + '-mode-toggle');
+  toggle.querySelectorAll('.input-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  document.getElementById(tabPrefix + '-manual-mode').style.display = mode === 'manual' ? '' : 'none';
+  document.getElementById(tabPrefix + '-file-mode').style.display = mode === 'file' ? '' : 'none';
+}
+
+/* ========================================================================
+   SHARED UTILITIES
+   ======================================================================== */
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function copyValue(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => showToast(t('copied')));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  showToast(t('copied'));
+}
+
+function reverseGeocode(lat, lon, targetId) {
+  const lang = currentLang === 'el' ? 'el' : 'en';
+  fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=${lang}`, {
+    headers: { 'User-Agent': 'TopoTools/1.0' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.display_name) {
+      document.getElementById(targetId).textContent = t('address_label') + ': ' + data.display_name;
+    }
+  })
+  .catch(() => {});
+}
+
+function downloadFile(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ========================================================================
+   COORDINATE MATH (client-side, mirrors Python backend)
+   ======================================================================== */
+const GRS80_A = 6378137.0, GRS80_F = 1/298.257222101;
+const GRS80_E2 = 2*GRS80_F - GRS80_F*GRS80_F;
+const GRS80_EP2 = GRS80_E2 / (1 - GRS80_E2);
+
+const WGS84_A = 6378137.0, WGS84_F = 1/298.257223563;
+const WGS84_E2 = 2*WGS84_F - WGS84_F*WGS84_F;
+const WGS84_EP2 = WGS84_E2 / (1 - WGS84_E2);
+
+const TM_LON0 = 24 * Math.PI / 180, TM_K0 = 0.9996, TM_FE = 500000, TM_FN = 0;
+const DX = -199.87, DY = 74.79, DZ = 246.62;
+
+function meridionalArc(phi, a, e2) {
+  const e4 = e2*e2, e6 = e4*e2;
+  const A0 = 1 - e2/4 - 3*e4/64 - 5*e6/256;
+  const A2 = 3/8*(e2 + e4/4 + 15*e6/128);
+  const A4 = 15/256*(e4 + 3*e6/4);
+  const A6 = 35*e6/3072;
+  return a*(A0*phi - A2*Math.sin(2*phi) + A4*Math.sin(4*phi) - A6*Math.sin(6*phi));
+}
+
+function footpointLat(M, a, e2) {
+  const e4 = e2*e2, e6 = e4*e2;
+  const A0 = 1 - e2/4 - 3*e4/64 - 5*e6/256;
+  const mu = M/(a*A0);
+  const e1 = (1 - Math.sqrt(1-e2))/(1 + Math.sqrt(1-e2));
+  const e12 = e1*e1, e13 = e12*e1, e14 = e13*e1;
+  return mu + (3*e1/2 - 27*e13/32)*Math.sin(2*mu)
+    + (21*e12/16 - 55*e14/32)*Math.sin(4*mu)
+    + (151*e13/96)*Math.sin(6*mu)
+    + (1097*e14/512)*Math.sin(8*mu);
+}
+
+function tmForward(latR, lonR, a, e2, ep2, lon0, k0, fe, fn) {
+  const phi = latR, dlam = lonR - lon0;
+  const sp = Math.sin(phi), cp = Math.cos(phi), tp = Math.tan(phi);
+  const N = a/Math.sqrt(1 - e2*sp*sp);
+  const T = tp*tp, C = ep2*cp*cp, A = dlam*cp;
+  const M = meridionalArc(phi, a, e2);
+  const A2=A*A, A3=A2*A, A4=A3*A, A5=A4*A, A6=A5*A;
+  const easting = fe + k0*N*(A + A3/6*(1-T+C) + A5/120*(5-18*T+T*T+72*C-58*ep2));
+  const northing = fn + k0*(M + N*tp*(A2/2 + A4/24*(5-T+9*C+4*C*C) + A6/720*(61-58*T+T*T+600*C-330*ep2)));
+  return [easting, northing];
+}
+
+function tmReverse(easting, northing, a, e2, ep2, lon0, k0, fe, fn) {
+  const M = (northing - fn)/k0;
+  const phi1 = footpointLat(M, a, e2);
+  const sp = Math.sin(phi1), cp = Math.cos(phi1), tp = Math.tan(phi1);
+  const N1 = a/Math.sqrt(1 - e2*sp*sp);
+  const R1 = a*(1-e2)/Math.pow(1-e2*sp*sp, 1.5);
+  const T1 = tp*tp, C1 = ep2*cp*cp;
+  const D = (easting - fe)/(N1*k0);
+  const D2=D*D, D3=D2*D, D4=D3*D, D5=D4*D, D6=D5*D;
+  const lat = phi1 - (N1*tp/R1)*(D2/2 - D4/24*(5+3*T1+10*C1-4*C1*C1-9*ep2) + D6/720*(61+90*T1+298*C1+45*T1*T1-252*ep2-3*C1*C1));
+  const lon = lon0 + (1/cp)*(D - D3/6*(1+2*T1+C1) + D5/120*(5-2*C1+28*T1-3*C1*C1+8*ep2+24*T1*T1));
+  return [lat, lon];
+}
+
+function geoToECEF(latR, lonR, h, a, e2) {
+  const sp = Math.sin(latR), cp = Math.cos(latR);
+  const N = a/Math.sqrt(1 - e2*sp*sp);
+  return [(N+h)*cp*Math.cos(lonR), (N+h)*cp*Math.sin(lonR), (N*(1-e2)+h)*sp];
+}
+
+function ecefToGeo(X, Y, Z, a, e2) {
+  const b = a*Math.sqrt(1-e2), ep2b = (a*a-b*b)/(b*b);
+  const p = Math.sqrt(X*X+Y*Y);
+  const lon = Math.atan2(Y, X);
+  let theta = Math.atan2(Z*a, p*b);
+  let lat = Math.atan2(Z + ep2b*b*Math.pow(Math.sin(theta),3), p - e2*a*Math.pow(Math.cos(theta),3));
+  for (let i = 0; i < 10; i++) {
+    const sl = Math.sin(lat), N = a/Math.sqrt(1-e2*sl*sl);
+    const nl = Math.atan2(Z + e2*N*sl, p);
+    if (Math.abs(nl-lat) < 1e-14) break;
+    lat = nl;
+  }
+  return [lat, lon];
+}
+
+// Public conversion functions
+function egsa87ToWgs84(x, y) {
+  const [latG, lonG] = tmReverse(x, y, GRS80_A, GRS80_E2, GRS80_EP2, TM_LON0, TM_K0, TM_FE, TM_FN);
+  let [X, Y2, Z] = geoToECEF(latG, lonG, 0, GRS80_A, GRS80_E2);
+  X += DX; Y2 += DY; Z += DZ;
+  const [lat, lon] = ecefToGeo(X, Y2, Z, WGS84_A, WGS84_E2);
+  return [lat*180/Math.PI, lon*180/Math.PI];
+}
+
+function wgs84ToEgsa87(lat, lon) {
+  const latR = lat*Math.PI/180, lonR = lon*Math.PI/180;
+  let [X, Y2, Z] = geoToECEF(latR, lonR, 0, WGS84_A, WGS84_E2);
+  X -= DX; Y2 -= DY; Z -= DZ;
+  const [latG, lonG] = ecefToGeo(X, Y2, Z, GRS80_A, GRS80_E2);
+  return tmForward(latG, lonG, GRS80_A, GRS80_E2, GRS80_EP2, TM_LON0, TM_K0, TM_FE, TM_FN);
+}
+
+function wgs84ToTm07(lat, lon) {
+  return tmForward(lat*Math.PI/180, lon*Math.PI/180, WGS84_A, WGS84_E2, WGS84_EP2, TM_LON0, TM_K0, TM_FE, TM_FN);
+}
+
+function tm07ToWgs84(x, y) {
+  const [lat, lon] = tmReverse(x, y, WGS84_A, WGS84_E2, WGS84_EP2, TM_LON0, TM_K0, TM_FE, TM_FN);
+  return [lat*180/Math.PI, lon*180/Math.PI];
+}
+
+// GGRS87 geographic (degrees on GRS80) <-> WGS84
+function ggrs87ToWgs84(latDeg, lonDeg) {
+  const latR = latDeg*Math.PI/180, lonR = lonDeg*Math.PI/180;
+  let [X, Y2, Z] = geoToECEF(latR, lonR, 0, GRS80_A, GRS80_E2);
+  X += DX; Y2 += DY; Z += DZ;
+  const [lat, lon] = ecefToGeo(X, Y2, Z, WGS84_A, WGS84_E2);
+  return [lat*180/Math.PI, lon*180/Math.PI];
+}
+
+function wgs84ToGgrs87(lat, lon) {
+  const latR = lat*Math.PI/180, lonR = lon*Math.PI/180;
+  let [X, Y2, Z] = geoToECEF(latR, lonR, 0, WGS84_A, WGS84_E2);
+  X -= DX; Y2 -= DY; Z -= DZ;
+  const [latG, lonG] = ecefToGeo(X, Y2, Z, GRS80_A, GRS80_E2);
+  return [latG*180/Math.PI, lonG*180/Math.PI];
+}
+
+// EGSA87 <-> GGRS87 geographic (just TM forward/reverse on GRS80)
+function egsa87ToGgrs87Geo(x, y) {
+  const [lat, lon] = tmReverse(x, y, GRS80_A, GRS80_E2, GRS80_EP2, TM_LON0, TM_K0, TM_FE, TM_FN);
+  return [lat*180/Math.PI, lon*180/Math.PI];
+}
+function ggrs87GeoToEgsa87(latDeg, lonDeg) {
+  return tmForward(latDeg*Math.PI/180, lonDeg*Math.PI/180, GRS80_A, GRS80_E2, GRS80_EP2, TM_LON0, TM_K0, TM_FE, TM_FN);
+}
+
+// DMS parsing/formatting
+function parseDMS(str) {
+  const m = str.match(/(-?\d+)\s*[°]\s*(\d+)\s*['']\s*([\d.]+)\s*[""]?\s*([NSEWnsew])?/);
+  if (!m) return parseFloat(str);
+  let dd = parseInt(m[1]) + parseInt(m[2])/60 + parseFloat(m[3])/3600;
+  if (m[4] && /[SsWw]/.test(m[4])) dd = -dd;
+  if (parseInt(m[1]) < 0) dd = -dd + 2*parseInt(m[1]); // handle negative
+  return dd;
+}
+
+function toDMS(dd, dir) {
+  const sign = dd < 0 ? -1 : 1;
+  dd = Math.abs(dd);
+  const d = Math.floor(dd);
+  const mf = (dd - d)*60;
+  const m = Math.floor(mf);
+  const s = ((mf - m)*60).toFixed(4);
+  const suffix = dir === 'lat' ? (sign >= 0 ? 'N' : 'S') : (sign >= 0 ? 'E' : 'W');
+  return d + '\u00B0 ' + String(m).padStart(2,'0') + '\u2032 ' + String(s).padStart(7,'0') + '\u2033 ' + suffix;
+}
+
+// Validation
+function isValidWgs84(lat, lon) { return lat >= 34 && lat <= 42 && lon >= 19 && lon <= 30; }
+function isLikelyGreekGrid(x, y) { return x >= 100000 && x <= 900000 && y >= 3800000 && y <= 4700000; }
+
+/* ========================================================================
+   HUB CONVERSION: input -> GGRS87 geo -> all outputs
+   ======================================================================== */
+function inputToGgrs87Geo(system, v1, v2) {
+  switch(system) {
+    case 'egsa87': return egsa87ToGgrs87Geo(v1, v2);
+    case 'wgs84_dd': { const [g1,g2] = wgs84ToGgrs87(v1, v2); return [g1, g2]; }
+    case 'wgs84_dms': {
+      const lat = typeof v1 === 'string' ? parseDMS(v1) : v1;
+      const lon = typeof v2 === 'string' ? parseDMS(v2) : v2;
+      return wgs84ToGgrs87(lat, lon);
+    }
+    case 'ggrs87_geo': return [v1, v2];
+    case 'htrs07_geo': {
+      // HTRS07 geo is WGS84 geographic
+      return wgs84ToGgrs87(v1, v2);
+    }
+    case 'tm07': {
+      const [lat, lon] = tm07ToWgs84(v1, v2);
+      return wgs84ToGgrs87(lat, lon);
+    }
+    default: return [v1, v2];
+  }
+}
+
+function ggrs87GeoToAll(gLat, gLon) {
+  const [wLat, wLon] = ggrs87ToWgs84(gLat, gLon);
+  const [eX, eY] = ggrs87GeoToEgsa87(gLat, gLon);
+  const [tX, tY] = wgs84ToTm07(wLat, wLon);
+  return {
+    egsa87: { x: eX, y: eY },
+    wgs84_dd: { lat: wLat, lon: wLon },
+    wgs84_dms: { lat: toDMS(wLat, 'lat'), lon: toDMS(wLon, 'lon') },
+    ggrs87_geo: { lat: gLat, lon: gLon },
+    htrs07_geo: { lat: wLat, lon: wLon },
+    tm07: { x: tX, y: tY },
+  };
+}
+
+function pointToEgsa87(system, v1, v2) {
+  const [gLat, gLon] = inputToGgrs87Geo(system, v1, v2);
+  return ggrs87GeoToEgsa87(gLat, gLon);
+}
+
+function pointToWgs84(system, v1, v2) {
+  const [gLat, gLon] = inputToGgrs87Geo(system, v1, v2);
+  return ggrs87ToWgs84(gLat, gLon);
+}
+
+/* ========================================================================
+   CONVERT TAB
+   ======================================================================== */
+let convertData = [];
+
+function updateConvertInputFields() {
+  // placeholder update based on system
+}
+
+function addConvertPoint() {
+  const list = document.getElementById('convert-points-list');
+  const idx = list.children.length;
+  const row = document.createElement('div');
+  row.className = 'point-row';
+  row.innerHTML = '<input type="text" placeholder="X / Lat / Lon"><input type="text" placeholder="Y / Lon / Lat"><button class="remove-btn" onclick="removeConvertPoint(this)">&times;</button>';
+  list.appendChild(row);
+  document.getElementById('convert-point-counter').textContent = list.children.length;
+}
+
+function removeConvertPoint(btn) {
+  const list = document.getElementById('convert-points-list');
+  if (list.children.length > 1) {
+    btn.closest('.point-row').remove();
+    document.getElementById('convert-point-counter').textContent = list.children.length;
+  }
+}
+
+function doConvert() {
+  const sys = document.getElementById('convert-input-system').value;
+  const outSys = document.getElementById('convert-output-system').value;
+  const rows = document.querySelectorAll('#convert-points-list .point-row');
+  convertData = [];
+
+  rows.forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    const v1s = inputs[0].value.trim(), v2s = inputs[1].value.trim();
+    if (!v1s || !v2s) return;
+    const v1 = sys === 'wgs84_dms' ? v1s : parseFloat(v1s);
+    const v2 = sys === 'wgs84_dms' ? v2s : parseFloat(v2s);
+    if (sys !== 'wgs84_dms' && (isNaN(v1) || isNaN(v2))) return;
+    const [gLat, gLon] = inputToGgrs87Geo(sys, v1, v2);
+    const all = ggrs87GeoToAll(gLat, gLon);
+    convertData.push({ input: [v1, v2], all });
+  });
+
+  if (convertData.length === 0) { showToast(t('no_coords')); return; }
+  renderConvertResults(outSys);
+
+  if (convertData.length === 1) {
+    const wgs = convertData[0].all.wgs84_dd;
+    reverseGeocode(wgs.lat, wgs.lon, 'convert-address');
+  }
+}
+
+function renderConvertResults(outSys) {
+  const table = document.getElementById('convert-results-table');
+  const systems = outSys === 'all'
+    ? ['egsa87','wgs84_dd','wgs84_dms','ggrs87_geo','htrs07_geo','tm07']
+    : [outSys];
+
+  const sysLabels = {
+    egsa87: ['EGSA87 X','EGSA87 Y'],
+    wgs84_dd: ['WGS84 Lat','WGS84 Lon'],
+    wgs84_dms: ['WGS84 DMS Lat','WGS84 DMS Lon'],
+    ggrs87_geo: ['GGRS87 Lat','GGRS87 Lon'],
+    htrs07_geo: ['HTRS07 Lat','HTRS07 Lon'],
+    tm07: ['TM07 X','TM07 Y'],
+  };
+
+  let hdr = '<thead><tr><th>#</th><th class="col-input">Input 1</th><th class="col-input">Input 2</th>';
+  systems.forEach(s => { hdr += `<th class="col-output">${sysLabels[s][0]}</th><th class="col-output">${sysLabels[s][1]}</th>`; });
+  hdr += '</tr></thead>';
+
+  let body = '<tbody>';
+  const max = Math.min(convertData.length, 500);
+  for (let i = 0; i < max; i++) {
+    const d = convertData[i];
+    body += `<tr><td>${i+1}</td><td class="col-input">${escapeHtml(String(d.input[0]))}</td><td class="col-input">${escapeHtml(String(d.input[1]))}</td>`;
+    systems.forEach(s => {
+      const o = d.all[s];
+      if (s === 'wgs84_dms') {
+        body += `<td class="col-output">${escapeHtml(o.lat)}</td><td class="col-output">${escapeHtml(o.lon)}</td>`;
+      } else if (o.x !== undefined) {
+        body += `<td class="col-output">${o.x.toFixed(3)}</td><td class="col-output">${o.y.toFixed(3)}</td>`;
+      } else {
+        body += `<td class="col-output">${o.lat.toFixed(8)}</td><td class="col-output">${o.lon.toFixed(8)}</td>`;
+      }
+    });
+    body += '</tr>';
+  }
+  body += '</tbody>';
+  table.innerHTML = hdr + body;
+  document.getElementById('convert-results').style.display = '';
+}
+
+/* ========================================================================
+   CONVERT FILE UPLOAD
+   ======================================================================== */
+function parseBulkCoordinates(text, inputSystem) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length === 0) return [];
+
+  // Auto-detect delimiter
+  const firstData = lines[0];
+  let delim = '\t';
+  if (firstData.includes('\t')) delim = '\t';
+  else if (firstData.includes(';')) delim = ';';
+  else if (firstData.includes(',') && firstData.split(',').length >= 2) delim = ',';
+  else delim = /\s+/;
+
+  // Detect header
+  let start = 0;
+  const firstParts = typeof delim === 'string' ? lines[0].split(delim) : lines[0].split(delim);
+  if (firstParts.length >= 2 && isNaN(parseFloat(firstParts[0])) && isNaN(parseFloat(firstParts[1]))) {
+    start = 1;
+  }
+
+  const points = [];
+  for (let i = start; i < lines.length; i++) {
+    const parts = typeof delim === 'string' ? lines[i].split(delim).map(s => s.trim()) : lines[i].trim().split(delim).map(s => s.trim());
+    if (parts.length < 2) continue;
+    const v1 = inputSystem === 'wgs84_dms' ? parts[0] : parseFloat(parts[0]);
+    const v2 = inputSystem === 'wgs84_dms' ? parts[1] : parseFloat(parts[1]);
+    if (inputSystem !== 'wgs84_dms' && (isNaN(v1) || isNaN(v2))) continue;
+    points.push([v1, v2]);
+  }
+  return points;
+}
+
+// Drop zone setup
+function setupDropZone(zoneId, fileInputId, handler) {
+  const zone = document.getElementById(zoneId);
+  const input = document.getElementById(fileInputId);
+  zone.addEventListener('click', () => input.click());
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; handler({ target: input }); }
+  });
+}
+
+function handleConvertFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const sys = document.getElementById('convert-input-system').value;
+    const points = parseBulkCoordinates(e.target.result, sys);
+    if (points.length === 0) { showToast(t('no_coords')); return; }
+
+    convertData = points.map(([v1, v2]) => {
+      const [gLat, gLon] = inputToGgrs87Geo(sys, v1, v2);
+      return { input: [v1, v2], all: ggrs87GeoToAll(gLat, gLon) };
+    });
+
+    showToast(points.length + ' ' + t('file_parsed'));
+    renderConvertResults(document.getElementById('convert-output-system').value);
+  };
+  reader.readAsText(file);
+}
+
+function handleAreaFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const sys = document.getElementById('area-input-system').value;
+    const points = parseBulkCoordinates(e.target.result, sys);
+    if (points.length < 3) { showToast(t('min_points')); return; }
+
+    // Fill the manual points list
+    const list = document.getElementById('area-points-list');
+    list.innerHTML = '';
+    points.forEach(([v1, v2]) => {
+      const row = document.createElement('div');
+      row.className = 'point-row';
+      row.innerHTML = `<input type="text" value="${v1}"><input type="text" value="${v2}"><button class="remove-btn" onclick="removeAreaPoint(this)">&times;</button>`;
+      list.appendChild(row);
+    });
+    document.getElementById('area-point-counter').textContent = points.length;
+    showToast(points.length + ' ' + t('file_parsed'));
+    switchInputMode('area', 'manual');
+    doCalculateArea();
+  };
+  reader.readAsText(file);
+}
+
+/* ========================================================================
+   EXPORT
+   ======================================================================== */
+function exportConvertCSV() {
+  if (!convertData.length) return;
+  const outSys = document.getElementById('convert-output-system').value;
+  const systems = outSys === 'all' ? ['egsa87','wgs84_dd','wgs84_dms','ggrs87_geo','htrs07_geo','tm07'] : [outSys];
+  let csv = 'Input1,Input2';
+  systems.forEach(s => { csv += `,${s}_1,${s}_2`; });
+  csv += '\n';
+  convertData.forEach(d => {
+    csv += `${d.input[0]},${d.input[1]}`;
+    systems.forEach(s => {
+      const o = d.all[s];
+      if (s === 'wgs84_dms') csv += `,"${o.lat}","${o.lon}"`;
+      else if (o.x !== undefined) csv += `,${o.x.toFixed(3)},${o.y.toFixed(3)}`;
+      else csv += `,${o.lat.toFixed(8)},${o.lon.toFixed(8)}`;
+    });
+    csv += '\n';
+  });
+  downloadFile(csv, 'topotools_convert.csv', 'text/csv');
+}
+
+function exportConvertXLSX() {
+  if (!convertData.length) return;
+  const outSys = document.getElementById('convert-output-system').value;
+  const systems = outSys === 'all' ? ['egsa87','wgs84_dd','wgs84_dms','ggrs87_geo','htrs07_geo','tm07'] : [outSys];
+  let tsv = '\uFEFFInput1\tInput2';
+  systems.forEach(s => { tsv += `\t${s}_1\t${s}_2`; });
+  tsv += '\n';
+  convertData.forEach(d => {
+    tsv += `${d.input[0]}\t${d.input[1]}`;
+    systems.forEach(s => {
+      const o = d.all[s];
+      if (s === 'wgs84_dms') tsv += `\t${o.lat}\t${o.lon}`;
+      else if (o.x !== undefined) tsv += `\t${o.x.toFixed(3)}\t${o.y.toFixed(3)}`;
+      else tsv += `\t${o.lat.toFixed(8)}\t${o.lon.toFixed(8)}`;
+    });
+    tsv += '\n';
+  });
+  downloadFile(tsv, 'topotools_convert.xls', 'application/vnd.ms-excel');
+}
+
+function copyConvertTable() {
+  const table = document.getElementById('convert-results-table');
+  if (!table) return;
+  let text = '';
+  table.querySelectorAll('tr').forEach(tr => {
+    const cells = [];
+    tr.querySelectorAll('th, td').forEach(c => cells.push(c.textContent));
+    text += cells.join('\t') + '\n';
+  });
+  copyValue(text);
+}
+
+/* ========================================================================
+   AREA TAB
+   ======================================================================== */
+let areaMap = null, areaPolygon = null, areaMarkers = [];
+
+function addAreaPoint() {
+  const list = document.getElementById('area-points-list');
+  const row = document.createElement('div');
+  row.className = 'point-row';
+  row.innerHTML = '<input type="text" placeholder="X / Lat"><input type="text" placeholder="Y / Lon"><button class="remove-btn" onclick="removeAreaPoint(this)">&times;</button>';
+  list.appendChild(row);
+  document.getElementById('area-point-counter').textContent = list.children.length;
+}
+
+function removeAreaPoint(btn) {
+  const list = document.getElementById('area-points-list');
+  if (list.children.length > 3) {
+    btn.closest('.point-row').remove();
+    document.getElementById('area-point-counter').textContent = list.children.length;
+  }
+}
+
+function shoelaceArea(points) {
+  let area = 0;
+  const n = points.length;
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    area += points[i][0] * points[j][1];
+    area -= points[j][0] * points[i][1];
+  }
+  return Math.abs(area) / 2;
+}
+
+function doCalculateArea() {
+  const sys = document.getElementById('area-input-system').value;
+  const rows = document.querySelectorAll('#area-points-list .point-row');
+  const egsaPoints = [], wgsPoints = [];
+
+  rows.forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    const v1s = inputs[0].value.trim(), v2s = inputs[1].value.trim();
+    if (!v1s || !v2s) return;
+    const v1 = sys === 'wgs84_dms' ? v1s : parseFloat(v1s);
+    const v2 = sys === 'wgs84_dms' ? v2s : parseFloat(v2s);
+    if (sys !== 'wgs84_dms' && (isNaN(v1) || isNaN(v2))) return;
+    const [ex, ey] = pointToEgsa87(sys, v1, v2);
+    const [wLat, wLon] = pointToWgs84(sys, v1, v2);
+    egsaPoints.push([ex, ey]);
+    wgsPoints.push([wLat, wLon]);
+  });
+
+  if (egsaPoints.length < 3) { showToast(t('min_points')); return; }
+
+  const areaM2 = shoelaceArea(egsaPoints);
+  document.getElementById('area-m2').textContent = areaM2.toFixed(2) + ' m\u00B2';
+  document.getElementById('area-extra').textContent =
+    (areaM2 / 10000).toFixed(4) + ' ' + t('hectares') + '  |  ' +
+    (areaM2 / 1000).toFixed(3) + ' ' + t('stremma');
+
+  // EGSA87 table
+  const table = document.getElementById('area-egsa-table');
+  let html = '<thead><tr><th>#</th><th>EGSA87 X</th><th>EGSA87 Y</th></tr></thead><tbody>';
+  egsaPoints.forEach(([x, y], i) => {
+    html += `<tr><td>${i+1}</td><td>${x.toFixed(3)}</td><td>${y.toFixed(3)}</td></tr>`;
+  });
+  html += '</tbody>';
+  table.innerHTML = html;
+
+  // Map
+  renderAreaMap(wgsPoints);
+
+  // Centroid geocode
+  const cLat = wgsPoints.reduce((s, p) => s + p[0], 0) / wgsPoints.length;
+  const cLon = wgsPoints.reduce((s, p) => s + p[1], 0) / wgsPoints.length;
+  reverseGeocode(cLat, cLon, 'area-address');
+
+  document.getElementById('area-results').style.display = '';
+
+  // Store for export
+  window._areaEgsaPoints = egsaPoints;
+  window._areaM2 = areaM2;
+}
+
+function renderAreaMap(wgsPoints) {
+  const container = document.getElementById('area-map');
+  if (areaMap) { areaMap.remove(); areaMap = null; }
+  areaMap = L.map(container).setView([wgsPoints[0][0], wgsPoints[0][1]], 15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap', maxZoom: 19
+  }).addTo(areaMap);
+
+  const latlngs = wgsPoints.map(p => [p[0], p[1]]);
+  areaPolygon = L.polygon(latlngs, { color: '#2563eb', fillOpacity: 0.15 }).addTo(areaMap);
+  areaMap.fitBounds(areaPolygon.getBounds().pad(0.1));
+
+  areaMarkers.forEach(m => m.remove());
+  areaMarkers = [];
+  wgsPoints.forEach((p, i) => {
+    const marker = L.marker([p[0], p[1]], {
+      icon: L.divIcon({
+        className: '',
+        html: `<div style="background:var(--accent);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);">${i+1}</div>`,
+        iconSize: [24, 24], iconAnchor: [12, 12],
+      })
+    }).addTo(areaMap);
+    areaMarkers.push(marker);
+  });
+}
+
+function copyAreaResult() {
+  if (!window._areaM2) return;
+  const m2 = window._areaM2;
+  const text = `Area: ${m2.toFixed(2)} m\u00B2\n${(m2/10000).toFixed(4)} hectares\n${(m2/1000).toFixed(3)} stremma`;
+  copyValue(text);
+}
+
+function exportAreaCSV() {
+  if (!window._areaEgsaPoints) return;
+  let csv = 'Point,EGSA87_X,EGSA87_Y\n';
+  window._areaEgsaPoints.forEach(([x, y], i) => {
+    csv += `${i+1},${x.toFixed(3)},${y.toFixed(3)}\n`;
+  });
+  csv += `\nArea_m2,${window._areaM2.toFixed(2)}\n`;
+  csv += `Hectares,${(window._areaM2/10000).toFixed(4)}\n`;
+  csv += `Stremma,${(window._areaM2/1000).toFixed(3)}\n`;
+  downloadFile(csv, 'topotools_area.csv', 'text/csv');
+}
+
+/* ========================================================================
+   ZONING TAB
+   ======================================================================== */
+let zoningMap = null;
+
+function updateZoningInputFields() {
+  const sys = document.getElementById('zoning-coord-system').value;
+  document.getElementById('zoning-egsa-fields').style.display = sys === 'egsa87' ? '' : 'none';
+  document.getElementById('zoning-wgs-fields').style.display = sys === 'wgs84' ? '' : 'none';
+}
+
+function doKaekLookup() {
+  let kaek = document.getElementById('zoning-kaek').value.trim();
+  // Strip KAEK prefix
+  kaek = kaek.replace(/^KAEK\s*/i, '').replace(/^ΚΑΕΚ\s*/i, '').trim();
+  if (!kaek) return;
+
+  fetch('/api/v1/zoning/kaek', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ kaek }),
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (!data.found) { showToast(t('kaek_not_found')); return; }
+    // Auto-fill coordinates
+    if (data.x != null && data.y != null) {
+      document.getElementById('zoning-coord-system').value = 'egsa87';
+      updateZoningInputFields();
+      document.getElementById('zoning-x').value = data.x.toFixed(3);
+      document.getElementById('zoning-y').value = data.y.toFixed(3);
+    }
+    if (data.lat != null && data.lon != null) {
+      document.getElementById('zoning-lat').value = data.lat.toFixed(8);
+      document.getElementById('zoning-lon').value = data.lon.toFixed(8);
+    }
+    if (data.area_m2) {
+      document.getElementById('zoning-area').value = data.area_m2;
+    }
+    showToast('KAEK ' + kaek + ' found');
+  })
+  .catch(() => showToast(t('kaek_not_found')));
+}
+
+function doZoningCheck() {
+  const sys = document.getElementById('zoning-coord-system').value;
+  const body = {
+    coord_system: sys,
+    intended_use: document.getElementById('zoning-use').value,
+    area_m2: parseFloat(document.getElementById('zoning-area').value) || null,
+  };
+
+  if (sys === 'egsa87') {
+    body.x = parseFloat(document.getElementById('zoning-x').value);
+    body.y = parseFloat(document.getElementById('zoning-y').value);
+    if (isNaN(body.x) || isNaN(body.y)) { showToast(t('no_coords')); return; }
+  } else {
+    body.lat = parseFloat(document.getElementById('zoning-lat').value);
+    body.lon = parseFloat(document.getElementById('zoning-lon').value);
+    if (isNaN(body.lat) || isNaN(body.lon)) { showToast(t('no_coords')); return; }
+  }
+
+  document.getElementById('zoning-spinner').classList.add('active');
+  document.getElementById('zoning-results').style.display = 'none';
+
+  fetch('/api/v1/zoning/check', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  .then(r => r.json())
+  .then(renderZoningResults)
+  .catch(err => { showToast('Error: ' + err.message); })
+  .finally(() => { document.getElementById('zoning-spinner').classList.remove('active'); });
+}
+
+function renderZoningResults(data) {
+  // Verdict card
+  const vEmoji = data.verdict === 'green' ? '\u2705' : data.verdict === 'yellow' ? '\u26A0\uFE0F' : '\u274C';
+  document.getElementById('zoning-verdict-card').innerHTML =
+    `<div class="verdict-card verdict-${data.verdict}">${vEmoji} ${escapeHtml(data.verdict_summary)}</div>`;
+
+  // Meta grid
+  document.getElementById('zoning-meta').innerHTML = `
+    <div class="meta-item"><label>${t('municipality_label')}</label><div class="meta-value">${escapeHtml(data.municipality || '-')}</div></div>
+    <div class="meta-item"><label>${t('land_use_label')}</label><div class="meta-value">${escapeHtml(data.land_use || '-')}</div></div>
+    <div class="meta-item"><label>${t('zone_label')}</label><div class="meta-value">${escapeHtml(data.zone_name || '-')}</div></div>
+  `;
+
+  // Risk flags
+  let flagsHtml = '';
+  (data.risk_flags || []).forEach(f => {
+    flagsHtml += `<div class="risk-flag">
+      <div class="risk-flag-header">
+        <span class="risk-badge ${f.level}">${f.level.toUpperCase()}</span>
+        <strong>${escapeHtml(f.title)}</strong>
+      </div>
+      <div style="font-size:13px;color:var(--muted);">${escapeHtml(f.description)}</div>
+    </div>`;
+  });
+  document.getElementById('zoning-risk-flags').innerHTML = flagsHtml;
+
+  // Building params
+  const bp = data.building_params || {};
+  const pv = (v, suffix) => v != null ? v + (suffix || '') : '-';
+  document.getElementById('zoning-params').innerHTML = `
+    <div class="param-item"><label>${t('coverage_label')}</label><div class="param-value">${pv(bp.coverage_ratio)}</div></div>
+    <div class="param-item"><label>${t('factor_label')}</label><div class="param-value">${pv(bp.building_factor)}</div></div>
+    <div class="param-item"><label>${t('height_label')}</label><div class="param-value">${pv(bp.max_height_m, 'm')}</div></div>
+    <div class="param-item"><label>${t('floors_label')}</label><div class="param-value">${pv(bp.max_floors)}</div></div>
+    <div class="param-item"><label>${t('min_lot_label')}</label><div class="param-value">${pv(bp.min_lot_size_m2, ' m\u00B2')}</div></div>
+    <div class="param-item"><label>${t('frontage_label')}</label><div class="param-value">${pv(bp.min_frontage_m, 'm')}</div></div>
+    <div class="param-item"><label>${t('building_sys_label')}</label><div class="param-value">${pv(bp.building_system)}</div></div>
+    <div class="param-item"><label>${t('fek_label')}</label><div class="param-value">${bp.fek_url ? '<a class="fek-link" href="' + escapeHtml(bp.fek_url) + '" target="_blank">' + escapeHtml(bp.fek || 'Link') + '</a>' : pv(bp.fek)}</div></div>
+  `;
+
+  // Data source & disclaimer
+  document.getElementById('zoning-data-source').textContent = data.data_source || '';
+  document.getElementById('zoning-disclaimer').textContent = data.disclaimer || '';
+
+  // Map
+  renderZoningMap(data);
+
+  document.getElementById('zoning-results').style.display = '';
+}
+
+function renderZoningMap(data) {
+  // Get WGS84 coords for map
+  let lat, lon;
+  const sys = document.getElementById('zoning-coord-system').value;
+  if (sys === 'egsa87') {
+    const x = parseFloat(document.getElementById('zoning-x').value);
+    const y = parseFloat(document.getElementById('zoning-y').value);
+    [lat, lon] = egsa87ToWgs84(x, y);
+  } else {
+    lat = parseFloat(document.getElementById('zoning-lat').value);
+    lon = parseFloat(document.getElementById('zoning-lon').value);
+  }
+
+  const container = document.getElementById('zoning-map');
+  if (zoningMap) { zoningMap.remove(); zoningMap = null; }
+  zoningMap = L.map(container).setView([lat, lon], 16);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap', maxZoom: 19
+  }).addTo(zoningMap);
+
+  const colors = { green: '#22c55e', yellow: '#eab308', red: '#ef4444' };
+  const color = colors[data.verdict] || '#2563eb';
+
+  L.circleMarker([lat, lon], { radius: 8, color, fillColor: color, fillOpacity: 0.8, weight: 2 }).addTo(zoningMap);
+  L.circle([lat, lon], { radius: 100, color, fillOpacity: 0.08, weight: 1 }).addTo(zoningMap);
+
+  reverseGeocode(lat, lon, 'zoning-address');
+}
+
+/* ========================================================================
+   INIT
+   ======================================================================== */
+document.addEventListener('DOMContentLoaded', function() {
+  setLanguage(currentLang);
+  setupDropZone('convert-drop-zone', 'convert-file-input', handleConvertFile);
+  setupDropZone('area-drop-zone', 'area-file-input', handleAreaFile);
+});
+</script>
+</body>
+</html>
