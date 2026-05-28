@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from backend.routers import zoning_checker
+from backend.routers import report
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -20,7 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(zoning_checker.router)
+app.include_router(report.router)
 app.mount("/static", StaticFiles(directory=str(PROJECT_ROOT)), name="static")
 
 

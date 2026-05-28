@@ -294,17 +294,6 @@ select:focus, input:focus { outline: none; border-color: var(--accent); }
   margin-left: 8px;
 }
 
-/* ========================================================================
-   ZONING VERDICT
-   ======================================================================== */
-.verdict-card {
-  padding: 16px 20px; border-radius: 10px; margin-bottom: 16px;
-  font-size: 16px; font-weight: 600;
-}
-.verdict-green { background: rgba(34, 197, 94, 0.1); border: 1px solid var(--green); color: var(--green); }
-.verdict-yellow { background: rgba(234, 179, 8, 0.1); border: 1px solid var(--yellow); color: var(--yellow); }
-.verdict-red { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--red); color: var(--red); }
-
 .meta-grid {
   display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
   margin-bottom: 16px;
@@ -313,33 +302,6 @@ select:focus, input:focus { outline: none; border-color: var(--accent); }
 .meta-item .meta-value {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 13px; font-weight: 500;
-}
-
-.risk-flag {
-  padding: 12px; border-radius: 8px; margin-bottom: 8px;
-  background: var(--surface2); border: 1px solid var(--border);
-}
-.risk-flag-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-.risk-badge {
-  font-size: 11px; padding: 2px 8px; border-radius: 10px;
-  font-weight: 600; font-family: 'IBM Plex Mono', monospace;
-}
-.risk-badge.high { background: rgba(239,68,68,0.15); color: var(--red); }
-.risk-badge.medium { background: rgba(234,179,8,0.15); color: var(--yellow); }
-.risk-badge.low { background: rgba(34,197,94,0.15); color: var(--green); }
-
-.params-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-  margin-bottom: 12px;
-}
-.param-item {
-  background: var(--surface2); padding: 10px; border-radius: 8px;
-  border: 1px solid var(--border);
-}
-.param-item label { font-size: 11px; }
-.param-item .param-value {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 15px; font-weight: 600;
 }
 
 .data-source {
@@ -470,7 +432,6 @@ a.fek-link:hover { text-decoration: underline; }
   .header { gap: 8px; }
   .header-title { font-size: 18px; }
   .meta-grid { grid-template-columns: 1fr 1fr; }
-  .params-grid { grid-template-columns: 1fr; }
   .input-row { grid-template-columns: 1fr; }
 }
 
@@ -500,7 +461,6 @@ a.fek-link:hover { text-decoration: underline; }
   <div class="tab-bar">
     <button class="tab-btn active" data-tab="report" data-i18n="tab_report" onclick="switchTab('report')">Report</button>
     <button class="tab-btn" data-tab="convert" data-i18n="tab_convert" onclick="switchTab('convert')">Convert</button>
-    <button class="tab-btn" data-tab="zoning" data-i18n="tab_zoning" onclick="switchTab('zoning')">Zoning</button>
   </div>
 
   <!-- ===== TAB 0: REPORT ===== -->
@@ -621,40 +581,6 @@ a.fek-link:hover { text-decoration: underline; }
     </div>
   </div>
 
-  <!-- ===== TAB 2: ZONING ===== -->
-  <div class="tab-panel" id="tab-zoning">
-    <div class="card">
-      <div class="card-title" data-i18n="zoning_title">Zoning Check</div>
-
-      <!-- KAEK lookup -->
-      <div class="input-group">
-        <label>KAEK</label>
-        <div style="display:flex; gap:8px;">
-          <input type="text" id="zoning-kaek" placeholder="e.g. 050461527012" style="flex:1;">
-          <button class="btn btn-sm" style="width:auto;" onclick="doKaekLookup()" data-i18n="find_btn">FIND</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="spinner" id="zoning-spinner"></div>
-
-    <div id="zoning-results" style="display:none;">
-      <div id="zoning-verdict-card"></div>
-
-      <div class="card">
-        <div class="meta-grid" id="zoning-meta"></div>
-        <div id="zoning-risk-flags"></div>
-
-        <div class="card-title" data-i18n="building_params">Building Parameters</div>
-        <div class="params-grid" id="zoning-params"></div>
-
-        <div class="map-container" id="zoning-map"></div>
-        <div class="address-line" id="zoning-address"></div>
-        <div class="data-source" id="zoning-data-source"></div>
-        <div class="disclaimer" id="zoning-disclaimer"></div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- Toast -->
@@ -666,7 +592,7 @@ a.fek-link:hover { text-decoration: underline; }
    ======================================================================== */
 const translations = {
   el: {
-    tab_convert: "Μετατροπή", tab_zoning: "Πολεοδομία",
+    tab_convert: "Μετατροπή",
     convert_title: "Μετατροπή Συντεταγμένων",
     input_system: "Σύστημα Εισόδου", output_system: "Σύστημα Εξόδου",
     all_systems: "Όλα τα Συστήματα",
@@ -675,26 +601,8 @@ const translations = {
     drop_zone_text: "Σύρετε αρχείο .txt / .csv / .tsv εδώ ή κάντε κλικ",
     results: "Αποτελέσματα",
     download_csv: "Λήψη CSV", export_xlsx: "Εξαγωγή XLSX", copy_table: "Αντιγραφή",
-    zoning_title: "Έλεγχος Πολεοδομίας",
-    find_btn: "ΑΝΑΖΗΤΗΣΗ",
-    intended_use: "Προβλεπόμενη Χρήση",
-    use_residential: "Κατοικία", use_commercial: "Εμπορική",
-    use_industrial: "Βιομηχανική", use_agricultural: "Αγροτική", use_tourism: "Τουρισμός",
-    plot_area: "Εμβαδόν Οικοπέδου (m², προαιρ.)",
-    check_zoning_btn: "ΕΛΕΓΧΟΣ ΠΟΛΕΟΔΟΜΙΑΣ",
-    building_params: "Πολεοδομικά Δεδομένα",
-    verdict_green: "Δεν βρέθηκαν σημαντικοί περιορισμοί.",
-    verdict_yellow: "Βρέθηκαν ανησυχίες. Απαιτείται περαιτέρω διερεύνηση.",
-    verdict_red: "Βρέθηκαν σημαντικοί περιορισμοί. Η ανάπτυξη ενδέχεται να περιοριστεί.",
-    municipality_label: "Δήμος", land_use_label: "Χρήση Γης", zone_label: "Ζώνη",
-    coverage_label: "Κάλυψη %", factor_label: "Σ.Δ.", height_label: "Ύψος (m)",
-    floors_label: "Όροφοι", min_lot_label: "Ελάχ. Οικόπεδο (m²)",
-    frontage_label: "Πρόσοψη (m)", building_sys_label: "Σύστημα Δόμησης",
-    fek_label: "ΦΕΚ",
-    address_label: "Διεύθυνση",
-    no_coords: "Παρακαλώ εισάγετε συντεταγμένες.",
-    kaek_not_found: "Δεν βρέθηκε τεμάχιο με αυτό το ΚΑΕΚ.",
-    running_check: "Έλεγχος πολεοδομίας...",
+    plot_area: "Εμβαδόν Οικοπέδου",
+    municipality_label: "Δήμος",
     copied: "Αντιγράφηκε!",
     min_points: "Απαιτούνται τουλάχιστον 3 σημεία.",
     file_parsed: "σημεία φορτώθηκαν από το αρχείο",
@@ -712,7 +620,7 @@ const translations = {
     has_restrictions: "Περιορισμοί",
   },
   en: {
-    tab_convert: "Convert", tab_zoning: "Zoning",
+    tab_convert: "Convert",
     convert_title: "Coordinate Converter",
     input_system: "Input System", output_system: "Output System",
     all_systems: "All Systems",
@@ -721,26 +629,8 @@ const translations = {
     drop_zone_text: "Drop .txt / .csv / .tsv file here or click to browse",
     results: "Results",
     download_csv: "Download CSV", export_xlsx: "Export XLSX", copy_table: "Copy Table",
-    zoning_title: "Zoning Check",
-    find_btn: "FIND",
-    intended_use: "Intended Use",
-    use_residential: "Residential", use_commercial: "Commercial",
-    use_industrial: "Industrial", use_agricultural: "Agricultural", use_tourism: "Tourism",
-    plot_area: "Plot Area (m², optional)",
-    check_zoning_btn: "CHECK ZONING",
-    building_params: "Building Parameters",
-    verdict_green: "No significant restrictions found.",
-    verdict_yellow: "Minor concerns found. Further investigation recommended.",
-    verdict_red: "Significant restrictions found. Development may be restricted.",
-    municipality_label: "Municipality", land_use_label: "Land Use", zone_label: "Zone",
-    coverage_label: "Coverage %", factor_label: "Building Factor", height_label: "Height (m)",
-    floors_label: "Floors", min_lot_label: "Min Lot (m²)",
-    frontage_label: "Frontage (m)", building_sys_label: "Building System",
-    fek_label: "FEK",
-    address_label: "Address",
-    no_coords: "Please enter coordinates.",
-    kaek_not_found: "No parcel found for this KAEK.",
-    running_check: "Running zoning check...",
+    plot_area: "Plot Area",
+    municipality_label: "Municipality",
     copied: "Copied!",
     min_points: "At least 3 points are required.",
     file_parsed: "points loaded from file",
@@ -1346,156 +1236,6 @@ function copyConvertTable() {
     text += cells.join('\t') + '\n';
   });
   copyValue(text);
-}
-
-/* ========================================================================
-   ZONING TAB
-   ======================================================================== */
-let zoningMap = null;
-
-// Store resolved coords from KAEK lookup
-let zoningCoords = { lat: null, lon: null, x: null, y: null, area_m2: null };
-
-function doKaekLookup() {
-  let kaek = document.getElementById('zoning-kaek').value.trim();
-  // Strip KAEK prefix
-  kaek = kaek.replace(/^KAEK\s*/i, '').replace(/^ΚΑΕΚ\s*/i, '').trim();
-  if (!kaek) return;
-
-  document.getElementById('zoning-spinner').classList.add('active');
-  document.getElementById('zoning-results').style.display = 'none';
-
-  fetch('/api/v1/zoning/kaek', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ kaek }),
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (!data.found) {
-      showToast(t('kaek_not_found'));
-      document.getElementById('zoning-spinner').classList.remove('active');
-      return;
-    }
-    // Store resolved coordinates
-    zoningCoords = {
-      lat: data.lat, lon: data.lon,
-      x: data.x, y: data.y,
-      area_m2: data.area_m2 || null,
-    };
-    showToast('KAEK ' + kaek + ' — ' + t('running_check'));
-    // Auto-run zoning check
-    doZoningCheck();
-  })
-  .catch(() => {
-    showToast(t('kaek_not_found'));
-    document.getElementById('zoning-spinner').classList.remove('active');
-  });
-}
-
-function doZoningCheck() {
-  if (zoningCoords.lat == null || zoningCoords.lon == null) {
-    showToast(t('no_coords'));
-    document.getElementById('zoning-spinner').classList.remove('active');
-    return;
-  }
-
-  const body = {
-    coord_system: 'wgs84',
-    lat: zoningCoords.lat,
-    lon: zoningCoords.lon,
-    intended_use: 'residential',
-    area_m2: zoningCoords.area_m2,
-  };
-
-  document.getElementById('zoning-spinner').classList.add('active');
-  document.getElementById('zoning-results').style.display = 'none';
-
-  fetch('/api/v1/zoning/check', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-  .then(r => r.json())
-  .then(renderZoningResults)
-  .catch(err => { showToast('Error: ' + err.message); })
-  .finally(() => { document.getElementById('zoning-spinner').classList.remove('active'); });
-}
-
-function renderZoningResults(data) {
-  // Verdict card
-  const vEmoji = data.verdict === 'green' ? '\u2705' : data.verdict === 'yellow' ? '\u26A0\uFE0F' : '\u274C';
-  document.getElementById('zoning-verdict-card').innerHTML =
-    `<div class="verdict-card verdict-${data.verdict}">${vEmoji} ${escapeHtml(data.verdict_summary)}</div>`;
-
-  // Meta grid
-  const kaekVal = document.getElementById('zoning-kaek').value.trim().replace(/^KAEK\s*/i, '').replace(/^ΚΑΕΚ\s*/i, '');
-  const coordsStr = zoningCoords.x != null ? `${zoningCoords.x.toFixed(2)}, ${zoningCoords.y.toFixed(2)}` : zoningCoords.lat != null ? `${zoningCoords.lat.toFixed(6)}, ${zoningCoords.lon.toFixed(6)}` : '-';
-  document.getElementById('zoning-meta').innerHTML = `
-    <div class="meta-item"><label>KAEK</label><div class="meta-value">${escapeHtml(kaekVal || '-')}</div></div>
-    <div class="meta-item"><label>EGSA87</label><div class="meta-value">${coordsStr}</div></div>
-    <div class="meta-item"><label>${t('zone_label')}</label><div class="meta-value">${escapeHtml(data.zone_name || '-')}</div></div>
-    <div class="meta-item"><label>${t('land_use_label')}</label><div class="meta-value">${escapeHtml(data.land_use || '-')}</div></div>
-    <div class="meta-item"><label>${t('municipality_label')}</label><div class="meta-value">${escapeHtml(data.municipality || '-')}</div></div>
-    ${zoningCoords.area_m2 ? '<div class="meta-item"><label>' + t('plot_area') + '</label><div class="meta-value">' + zoningCoords.area_m2.toFixed(2) + ' m\u00B2</div></div>' : ''}
-  `;
-
-  // Risk flags
-  let flagsHtml = '';
-  (data.risk_flags || []).forEach(f => {
-    flagsHtml += `<div class="risk-flag">
-      <div class="risk-flag-header">
-        <span class="risk-badge ${f.level}">${f.level.toUpperCase()}</span>
-        <strong>${escapeHtml(f.title)}</strong>
-      </div>
-      <div style="font-size:13px;color:var(--muted);">${escapeHtml(f.description)}</div>
-    </div>`;
-  });
-  document.getElementById('zoning-risk-flags').innerHTML = flagsHtml;
-
-  // Building params
-  const bp = data.building_params || {};
-  const pv = (v, suffix) => v != null ? v + (suffix || '') : '-';
-  document.getElementById('zoning-params').innerHTML = `
-    <div class="param-item"><label>${t('coverage_label')}</label><div class="param-value">${pv(bp.coverage_ratio)}</div></div>
-    <div class="param-item"><label>${t('factor_label')}</label><div class="param-value">${pv(bp.building_factor)}</div></div>
-    <div class="param-item"><label>${t('height_label')}</label><div class="param-value">${pv(bp.max_height_m, 'm')}</div></div>
-    <div class="param-item"><label>${t('floors_label')}</label><div class="param-value">${pv(bp.max_floors)}</div></div>
-    <div class="param-item"><label>${t('min_lot_label')}</label><div class="param-value">${pv(bp.min_lot_size_m2, ' m\u00B2')}</div></div>
-    <div class="param-item"><label>${t('frontage_label')}</label><div class="param-value">${pv(bp.min_frontage_m, 'm')}</div></div>
-    <div class="param-item"><label>${t('building_sys_label')}</label><div class="param-value">${pv(bp.building_system)}</div></div>
-    <div class="param-item"><label>${t('fek_label')}</label><div class="param-value">${bp.fek_url ? escapeHtml(bp.fek || '') + ' <a class="fek-link" href="' + escapeHtml(bp.fek_url) + '" target="_blank" rel="noopener noreferrer">&#128196; PDF</a>' : pv(bp.fek)}</div></div>
-  `;
-
-  // Data source & disclaimer
-  document.getElementById('zoning-data-source').textContent = data.data_source || '';
-  document.getElementById('zoning-disclaimer').textContent = data.disclaimer || '';
-
-  // Show results first so map container is visible, then render map
-  document.getElementById('zoning-results').style.display = '';
-  setTimeout(() => renderZoningMap(data), 50);
-}
-
-function renderZoningMap(data) {
-  const lat = zoningCoords.lat;
-  const lon = zoningCoords.lon;
-  if (lat == null || lon == null) return;
-
-  const container = document.getElementById('zoning-map');
-  if (zoningMap) { zoningMap.remove(); zoningMap = null; }
-  zoningMap = L.map(container).setView([lat, lon], 16);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap', maxZoom: 19
-  }).addTo(zoningMap);
-
-  const colors = { green: '#22c55e', yellow: '#eab308', red: '#ef4444' };
-  const color = colors[data.verdict] || '#2563eb';
-
-  L.circleMarker([lat, lon], { radius: 8, color, fillColor: color, fillOpacity: 0.8, weight: 2 }).addTo(zoningMap);
-  L.circle([lat, lon], { radius: 100, color, fillOpacity: 0.08, weight: 1 }).addTo(zoningMap);
-
-  zoningMap.invalidateSize();
-  reverseGeocode(lat, lon, 'zoning-address');
 }
 
 /* ========================================================================

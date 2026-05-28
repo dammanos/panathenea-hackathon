@@ -117,66 +117,6 @@ async def _query_layer(client: httpx.AsyncClient, url: str, params: dict) -> lis
 # Public API
 # ---------------------------------------------------------------------------
 
-async def get_building_params(lat: float, lon: float) -> dict:
-    """Query 7 building parameter layers in parallel."""
-    params = _point_query_params(lat, lon)
-    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-        tasks = [
-            _query_layer(client, url, params)
-            for url in LAYERS_BUILDING.values()
-        ]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-
-    out = {}
-    for key, result in zip(LAYERS_BUILDING.keys(), results):
-        out[key] = result if isinstance(result, list) else []
-    return out
-
-
-async def get_natura_zones(lat: float, lon: float, buffer_m: float = 1000) -> list:
-    """Query Natura 2000 layer with buffer."""
-    params = _buffer_query_params(lat, lon, buffer_m)
-    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-        return await _query_layer(client, LAYER_NATURA, params)
-
-
-async def get_archaeological_zones(lat: float, lon: float, buffer_m: float = 500) -> list:
-    """Query 5 archaeological sublayers in parallel, tag each with _category."""
-    params = _buffer_query_params(lat, lon, buffer_m)
-    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-        tasks = [_query_layer(client, url, params) for url in LAYERS_ARCHAEOLOGICAL]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-
-    out = []
-    for category, result in zip(ARCH_CATEGORIES, results):
-        if isinstance(result, list):
-            for feature in result:
-                feature["_category"] = category
-                out.append(feature)
-    return out
-
-
-async def get_forest_map(lat: float, lon: float) -> list:
-    """Query forest map layer (point intersect)."""
-    params = _point_query_params(lat, lon)
-    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-        return await _query_layer(client, LAYER_FOREST, params)
-
-
-async def get_shoreline(lat: float, lon: float, buffer_m: float = 200) -> list:
-    """Query shoreline layer with buffer."""
-    params = _buffer_query_params(lat, lon, buffer_m)
-    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-        return await _query_layer(client, LAYER_SHORELINE, params)
-
-
-async def get_zoe_zones(lat: float, lon: float) -> list:
-    """Query ZOE (out-of-plan regulation) layer."""
-    params = _point_query_params(lat, lon)
-    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-        return await _query_layer(client, LAYER_ZOE, params)
-
-
 async def get_all_layers(lat: float, lon: float) -> dict:
     """Query ALL available TEE layers in parallel for a comprehensive report."""
     point = _point_query_params(lat, lon)
