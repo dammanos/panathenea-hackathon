@@ -1604,7 +1604,7 @@ function renderZoningResults(data) {
     <div class="param-item"><label>${t('min_lot_label')}</label><div class="param-value">${pv(bp.min_lot_size_m2, ' m\u00B2')}</div></div>
     <div class="param-item"><label>${t('frontage_label')}</label><div class="param-value">${pv(bp.min_frontage_m, 'm')}</div></div>
     <div class="param-item"><label>${t('building_sys_label')}</label><div class="param-value">${pv(bp.building_system)}</div></div>
-    <div class="param-item"><label>${t('fek_label')}</label><div class="param-value">${bp.fek_url ? '<a class="fek-link" href="' + escapeHtml(bp.fek_url) + '" target="_blank">' + escapeHtml(bp.fek || 'Link') + '</a>' : pv(bp.fek)}</div></div>
+    <div class="param-item"><label>${t('fek_label')}</label><div class="param-value">${bp.fek_url ? escapeHtml(bp.fek || '') + ' <a class="fek-link" href="' + escapeHtml(bp.fek_url) + '" target="_blank" rel="noopener noreferrer">&#128196; PDF</a>' : pv(bp.fek)}</div></div>
   `;
 
   // Data source & disclaimer

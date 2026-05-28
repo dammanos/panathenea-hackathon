@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+from urllib.parse import quote
 
 from fastapi import APIRouter
 
@@ -31,6 +32,45 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 def _load_static_rules() -> list[dict]:
     with open(DATA_DIR / "zoning_rules.json") as f:
         return json.load(f)
+
+
+_FEK_FIELD_NAMES = {"FEK", "FEK_NO", "NOMOS_FEK", "ΦΕΚ", "FEK_NUMBER", "FEK_AR", "ARITHMOS_FEK"}
+
+_FEK_SERIES_MAP = {"Α": "01", "Β": "02", "Γ": "03", "Δ": "04", "A": "01", "B": "02"}
+_ET_BLOB = "https://ia37rg02wpsa01.blob.core.windows.net/fek"
+
+
+def _build_fek_url(fek: str) -> str:
+    """Build a direct PDF URL for a FEK reference on the ET.GR blob storage.
+
+    Expected formats: "ΦΕΚ 166/Δ/1987", "166/Δ/1987", "ΦΕΚ 340/Β/1988".
+    Falls back to search page if parsing fails.
+    """
+    import re
+    m = re.search(r'(\d+)\s*/\s*([A-ZΑ-Ω]+)\s*/\s*(\d{4})', fek)
+    if m:
+        num, series, year = m.group(1), m.group(2), m.group(3)
+        series_code = _FEK_SERIES_MAP.get(series)
+        if series_code:
+            fek_name = f"{year}{series_code}{num.zfill(5)}"
+            return f"{_ET_BLOB}/{series_code}/{year}/{fek_name}.pdf"
+    return f"https://search.et.gr/el/?q={quote(fek)}"
+
+
+def _extract_fek(building_raw: dict) -> tuple[str | None, str | None]:
+    """Scan all building param layers for FEK-related attributes."""
+    for layer_features in building_raw.values():
+        if not isinstance(layer_features, list):
+            continue
+        for feat in layer_features:
+            attrs = feat.get("attributes", {})
+            for key, val in attrs.items():
+                if key.upper() in _FEK_FIELD_NAMES and val:
+                    fek = str(val).strip()
+                    if fek:
+                        fek_url = _build_fek_url(fek)
+                        return fek, fek_url
+    return None, None
 
 
 def _extract_label(features: list) -> str | None:
@@ -139,6 +179,8 @@ def _fallback_building_params(intended_use: str) -> BuildingParams | None:
                 setback_front_m=rule.get("setback_front_m"),
                 setback_side_m=rule.get("setback_side_m"),
                 max_floors=rule.get("max_floors"),
+                fek=rule.get("fek"),
+                fek_url=_build_fek_url(rule["fek"]) if rule.get("fek") else None,
             )
     return None
 
@@ -213,6 +255,8 @@ async def zoning_check(req: ZoningRequest):
 
     has_tee_data = any(v is not None for v in [sd_val, height_val, coverage_val])
 
+    fek, fek_url = _extract_fek(building_raw)
+
     if has_tee_data:
         building_params = BuildingParams(
             coverage_ratio=coverage_val,
@@ -220,6 +264,8 @@ async def zoning_check(req: ZoningRequest):
             max_height_m=height_val,
             min_lot_size_m2=artiotita_val,
             building_system=building_sys_label,
+            fek=fek,
+            fek_url=fek_url,
         )
         data_source = "TEE Unified Digital Map (live)"
     else:

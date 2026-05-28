@@ -157,6 +157,47 @@ class TestZoningCheck:
         assert "Static" in data["data_source"]
 
     @pytest.mark.asyncio
+    async def test_fek_extracted_from_tee(self, transport):
+        with _patch_tee(overrides={
+            "get_building_params": AsyncMock(return_value={
+                "sd": [{"attributes": {"LABEL": "1.8", "FEK": "120/Δ/2005"}}],
+                "height": [{"attributes": {"LABEL": "21.0"}}],
+                "coverage": [{"attributes": {"LABEL": "0.6"}}],
+                "artiotita": [],
+                "land_use": [],
+                "zone_sector": [],
+                "building_system": [],
+            }),
+        }):
+            async with AsyncClient(transport=transport, base_url="http://test") as client:
+                resp = await client.post("/api/v1/zoning/check", json={
+                    "coord_system": "wgs84", "lat": 37.97, "lon": 23.73,
+                })
+
+        data = resp.json()
+        assert data["building_params"]["fek"] == "120/Δ/2005"
+        assert data["building_params"]["fek_url"].endswith(".pdf")
+
+    @pytest.mark.asyncio
+    async def test_fallback_includes_fek(self, transport):
+        with _patch_tee(overrides={
+            "get_building_params": AsyncMock(return_value={
+                k: [] for k in ("sd", "height", "coverage", "artiotita", "land_use", "zone_sector", "building_system")
+            }),
+        }):
+            async with AsyncClient(transport=transport, base_url="http://test") as client:
+                resp = await client.post("/api/v1/zoning/check", json={
+                    "coord_system": "wgs84", "lat": 37.97, "lon": 23.73,
+                    "intended_use": "residential",
+                })
+
+        data = resp.json()
+        assert data["building_params"]["fek"] is not None
+        assert "ΦΕΚ" in data["building_params"]["fek"]
+        assert data["building_params"]["fek_url"] is not None
+        assert data["building_params"]["fek_url"].endswith(".pdf")
+
+    @pytest.mark.asyncio
     async def test_response_matches_schema(self, transport):
         with _patch_tee():
             async with AsyncClient(transport=transport, base_url="http://test") as client:

@@ -50,6 +50,11 @@ class TestZoningRules:
             assert isinstance(zone["max_floors"], int)
             assert zone["max_floors"] > 0
 
+    def test_each_zone_has_fek(self):
+        for zone in self.data:
+            assert "fek" in zone, f"Zone '{zone['name']}' missing 'fek'"
+            assert zone["fek"], f"Zone '{zone['name']}' has empty fek"
+
     def test_zone_names_unique(self):
         names = [z["name"] for z in self.data]
         assert len(names) == len(set(names))
