@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.6.3",
+  "checkpoint_id": "dfb0c9f593a1",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "backend/main.py",
+    "backend/routers/zoning_checker.py",
+    "tests/test_main.py",
+    "tests/test_zoning_router.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/df/b0c9f593a1/0/metadata.json",
+      "transcript": "/df/b0c9f593a1/0/full.jsonl",
+      "content_hash": "/df/b0c9f593a1/0/content_hash.txt",
+      "prompt": "/df/b0c9f593a1/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 12,
+    "cache_creation_tokens": 13074,
+    "cache_read_tokens": 633270,
+    "output_tokens": 9124,
+    "api_call_count": 10
+  }
+}
