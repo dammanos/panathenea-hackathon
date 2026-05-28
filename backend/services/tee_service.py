@@ -17,16 +17,6 @@ KAEK_BASE = (
 # ---------------------------------------------------------------------------
 _POLEO = f"{UDM_BASE}/UDM_SERVICE_POLEODOMIKI_PLIROFORIA/MapServer"
 
-LAYERS_BUILDING = {
-    "sd": f"{_POLEO}/20",
-    "height": f"{_POLEO}/16",
-    "coverage": f"{_POLEO}/18",
-    "artiotita": f"{_POLEO}/17",
-    "land_use": f"{_POLEO}/21",
-    "zone_sector": f"{_POLEO}/14",
-    "building_system": f"{_POLEO}/19",
-}
-
 LAYER_NATURA = f"{UDM_BASE}/UDM_SERVICE_NATURA_DASIKA/MapServer/0"
 LAYER_FOREST = f"{UDM_BASE}/UDM_SERVICE_NATURA_DASIKA/MapServer/15"
 LAYER_SHORELINE = f"{_POLEO}/1"
@@ -180,8 +170,12 @@ async def get_all_layers(lat: float, lon: float) -> dict:
 
 async def get_kaek_parcel(kaek: str) -> dict:
     """Look up a parcel by KAEK code. Returns dict with found, centroid, attributes."""
+    # KAEK codes are 12-digit numeric strings — reject anything else
+    clean = kaek.strip()
+    if not clean.isdigit() or len(clean) != 12:
+        return {"found": False, "kaek": kaek}
     params = {
-        "where": f"KAEK='{kaek}'",
+        "where": f"KAEK='{clean}'",
         "outFields": "*",
         "returnGeometry": "true",
         "outSR": "4326",

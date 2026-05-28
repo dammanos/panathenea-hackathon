@@ -65,8 +65,11 @@ class ReportResponse(BaseModel):
 
 @router.post("/generate", response_model=ReportResponse)
 async def generate_report(req: ReportRequest):
-    # 1. Look up parcel by KAEK
-    parcel = await get_kaek_parcel(req.kaek)
+    # 1. Validate and look up parcel by KAEK
+    kaek = req.kaek.strip()
+    if not kaek.isdigit() or len(kaek) != 12:
+        raise HTTPException(status_code=400, detail="KAEK must be a 12-digit code")
+    parcel = await get_kaek_parcel(kaek)
     if not parcel.get("found"):
         raise HTTPException(status_code=404, detail="Parcel not found for KAEK: " + req.kaek)
 
@@ -91,8 +94,6 @@ async def generate_report(req: ReportRequest):
         _reverse_geocode(lat, lon),
     )
 
-    # Count how many layers returned data
-    layers_with_data = sum(1 for v in all_layers.values() if v)
     layers_queried = len(all_layers)
 
     # Determine restrictions
