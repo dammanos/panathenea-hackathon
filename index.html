@@ -295,19 +295,6 @@ select:focus, input:focus { outline: none; border-color: var(--accent); }
 }
 
 /* ========================================================================
-   AREA RESULT
-   ======================================================================== */
-.area-big {
-  font-size: 28px; font-weight: 700; color: var(--green);
-  font-family: 'IBM Plex Mono', monospace;
-  margin-bottom: 4px;
-}
-.area-sub {
-  font-size: 14px; color: var(--muted);
-  font-family: 'IBM Plex Mono', monospace;
-}
-
-/* ========================================================================
    ZONING VERDICT
    ======================================================================== */
 .verdict-card {
@@ -430,6 +417,53 @@ a.fek-link { color: var(--accent); text-decoration: none; }
 a.fek-link:hover { text-decoration: underline; }
 
 /* ========================================================================
+   AI REPORT
+   ======================================================================== */
+.report-output {
+  font-size: 14px; line-height: 1.7;
+  white-space: pre-wrap; word-wrap: break-word;
+}
+.report-output h1, .report-output h2, .report-output h3 {
+  margin-top: 16px; margin-bottom: 8px; color: var(--text);
+}
+.report-output h2 { font-size: 16px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+.report-output h3 { font-size: 14px; }
+.report-output strong { color: var(--text); }
+.report-output ul, .report-output ol { padding-left: 20px; margin: 8px 0; }
+.report-output li { margin-bottom: 4px; }
+
+.report-status {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border-radius: 8px; margin-bottom: 12px;
+  font-weight: 600; font-size: 14px;
+}
+.report-status.loading {
+  background: rgba(37, 99, 235, 0.1); border: 1px solid var(--accent);
+  color: var(--accent);
+}
+.report-status.done {
+  background: rgba(34, 197, 94, 0.1); border: 1px solid var(--green);
+  color: var(--green);
+}
+.report-status.error {
+  background: rgba(239, 68, 68, 0.1); border: 1px solid var(--red);
+  color: var(--red);
+}
+.report-status .dot-pulse {
+  display: inline-block; width: 8px; height: 8px;
+  border-radius: 50%; background: var(--accent);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+.restriction-badge {
+  display: inline-block; padding: 3px 10px; border-radius: 12px;
+  font-size: 12px; font-weight: 600; font-family: 'IBM Plex Mono', monospace;
+}
+.restriction-badge.clean { background: rgba(34,197,94,0.15); color: var(--green); }
+.restriction-badge.flagged { background: rgba(239,68,68,0.15); color: var(--red); }
+
+/* ========================================================================
    RESPONSIVE
    ======================================================================== */
 @media (max-width: 680px) {
@@ -464,13 +498,51 @@ a.fek-link:hover { text-decoration: underline; }
 
   <!-- ===== TAB BAR ===== -->
   <div class="tab-bar">
-    <button class="tab-btn active" data-tab="convert" data-i18n="tab_convert" onclick="switchTab('convert')">Convert</button>
-    <button class="tab-btn" data-tab="area" data-i18n="tab_area" onclick="switchTab('area')">Area</button>
+    <button class="tab-btn active" data-tab="report" data-i18n="tab_report" onclick="switchTab('report')">Report</button>
+    <button class="tab-btn" data-tab="convert" data-i18n="tab_convert" onclick="switchTab('convert')">Convert</button>
     <button class="tab-btn" data-tab="zoning" data-i18n="tab_zoning" onclick="switchTab('zoning')">Zoning</button>
   </div>
 
+  <!-- ===== TAB 0: REPORT ===== -->
+  <div class="tab-panel active" id="tab-report">
+    <div class="card">
+      <div class="card-title" data-i18n="report_title">Property Due Diligence Report</div>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:12px;" data-i18n="report_desc">Enter a KAEK code to generate a full AI-powered property assessment report using live government data.</p>
+      <div class="input-group">
+        <label>KAEK</label>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="report-kaek" placeholder="e.g. 050461527012" style="flex:1;" onkeydown="if(event.key==='Enter')doGenerateReport()">
+          <button class="btn btn-sm" style="width:auto;" onclick="doGenerateReport()" id="report-btn" data-i18n="generate_report_btn">GENERATE REPORT</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="report-status-bar" style="display:none;"></div>
+
+    <div id="report-output" style="display:none;">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+          <div class="card-title" style="margin-bottom:0;" data-i18n="ai_report">AI Property Report</div>
+          <div>
+            <span class="restriction-badge" id="report-restriction-badge"></span>
+          </div>
+        </div>
+        <div class="meta-grid" id="report-meta"></div>
+        <div class="map-container" id="report-map"></div>
+        <div class="address-line" id="report-address"></div>
+        <div class="report-output" id="report-content"></div>
+        <div style="margin-top:16px;">
+          <div class="export-bar">
+            <button class="btn btn-secondary btn-sm" onclick="copyReport()" data-i18n="copy_report">Copy Report</button>
+          </div>
+        </div>
+        <div class="disclaimer" style="margin-top:12px;" data-i18n="report_disclaimer">AI-generated report based on live government data. Always verify with a licensed surveyor before making decisions.</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== TAB 1: CONVERT ===== -->
-  <div class="tab-panel active" id="tab-convert">
+  <div class="tab-panel" id="tab-convert">
     <div class="card">
       <div class="card-title" data-i18n="convert_title">Coordinate Converter</div>
 
@@ -549,77 +621,7 @@ a.fek-link:hover { text-decoration: underline; }
     </div>
   </div>
 
-  <!-- ===== TAB 2: AREA ===== -->
-  <div class="tab-panel" id="tab-area">
-    <div class="card">
-      <div class="card-title" data-i18n="area_title">Polygon Area Calculator</div>
-
-      <div class="input-group">
-        <label data-i18n="coord_system">Coordinate System</label>
-        <select id="area-input-system">
-          <option value="egsa87">EGSA87</option>
-          <option value="wgs84_dd">WGS84 DD</option>
-          <option value="wgs84_dms">WGS84 DMS</option>
-          <option value="ggrs87_geo">GGRS87 Geographic</option>
-          <option value="htrs07_geo">HTRS07 Geographic</option>
-          <option value="tm07">TM07</option>
-        </select>
-      </div>
-
-      <div class="input-mode-toggle" id="area-mode-toggle">
-        <button class="input-mode-btn active" data-mode="manual" onclick="switchInputMode('area','manual')" data-i18n="manual_entry">Manual Entry</button>
-        <button class="input-mode-btn" data-mode="file" onclick="switchInputMode('area','file')" data-i18n="file_upload">File Upload</button>
-      </div>
-
-      <div id="area-manual-mode">
-        <div class="points-list" id="area-points-list">
-          <div class="point-row">
-            <input type="text" placeholder="X / Lat"><input type="text" placeholder="Y / Lon">
-            <button class="remove-btn" onclick="removeAreaPoint(this)">&times;</button>
-          </div>
-          <div class="point-row">
-            <input type="text" placeholder="X / Lat"><input type="text" placeholder="Y / Lon">
-            <button class="remove-btn" onclick="removeAreaPoint(this)">&times;</button>
-          </div>
-          <div class="point-row">
-            <input type="text" placeholder="X / Lat"><input type="text" placeholder="Y / Lon">
-            <button class="remove-btn" onclick="removeAreaPoint(this)">&times;</button>
-          </div>
-        </div>
-        <div style="display:flex; gap:8px; margin-bottom:12px;">
-          <button class="btn btn-secondary btn-sm" onclick="addAreaPoint()" data-i18n="add_point">+ Add Point</button>
-          <span class="point-counter" id="area-point-counter">3</span>
-        </div>
-        <button class="btn" onclick="doCalculateArea()" data-i18n="calc_area_btn">CALCULATE AREA</button>
-      </div>
-
-      <div id="area-file-mode" style="display:none;">
-        <div class="drop-zone" id="area-drop-zone" data-i18n="drop_zone_text">
-          Drop .txt / .csv / .tsv file here or click to browse
-        </div>
-        <input type="file" id="area-file-input" accept=".txt,.csv,.tsv" style="display:none;" onchange="handleAreaFile(event)">
-      </div>
-    </div>
-
-    <div id="area-results" style="display:none;">
-      <div class="card">
-        <div class="card-title" data-i18n="area_result">Area Result</div>
-        <div class="address-line" id="area-address"></div>
-        <div class="area-big" id="area-m2"></div>
-        <div class="area-sub" id="area-extra"></div>
-        <div class="map-container" id="area-map"></div>
-        <div class="results-table-wrap">
-          <table class="results-table" id="area-egsa-table"></table>
-        </div>
-        <div class="export-bar">
-          <button class="btn btn-secondary btn-sm" onclick="copyAreaResult()" data-i18n="copy_result">Copy Result</button>
-          <button class="btn btn-secondary btn-sm" onclick="exportAreaCSV()" data-i18n="download_csv">Download CSV</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== TAB 3: ZONING ===== -->
+  <!-- ===== TAB 2: ZONING ===== -->
   <div class="tab-panel" id="tab-zoning">
     <div class="card">
       <div class="card-title" data-i18n="zoning_title">Zoning Check</div>
@@ -664,7 +666,7 @@ a.fek-link:hover { text-decoration: underline; }
    ======================================================================== */
 const translations = {
   el: {
-    tab_convert: "Μετατροπή", tab_area: "Εμβαδόν", tab_zoning: "Πολεοδομία",
+    tab_convert: "Μετατροπή", tab_zoning: "Πολεοδομία",
     convert_title: "Μετατροπή Συντεταγμένων",
     input_system: "Σύστημα Εισόδου", output_system: "Σύστημα Εξόδου",
     all_systems: "Όλα τα Συστήματα",
@@ -673,11 +675,6 @@ const translations = {
     drop_zone_text: "Σύρετε αρχείο .txt / .csv / .tsv εδώ ή κάντε κλικ",
     results: "Αποτελέσματα",
     download_csv: "Λήψη CSV", export_xlsx: "Εξαγωγή XLSX", copy_table: "Αντιγραφή",
-    area_title: "Υπολογιστής Εμβαδού Πολυγώνου",
-    coord_system: "Σύστημα Συντεταγμένων",
-    calc_area_btn: "ΥΠΟΛΟΓΙΣΜΟΣ ΕΜΒΑΔΟΥ",
-    area_result: "Αποτέλεσμα Εμβαδού",
-    copy_result: "Αντιγραφή Αποτελέσματος",
     zoning_title: "Έλεγχος Πολεοδομίας",
     find_btn: "ΑΝΑΖΗΤΗΣΗ",
     intended_use: "Προβλεπόμενη Χρήση",
@@ -694,7 +691,6 @@ const translations = {
     floors_label: "Όροφοι", min_lot_label: "Ελάχ. Οικόπεδο (m²)",
     frontage_label: "Πρόσοψη (m)", building_sys_label: "Σύστημα Δόμησης",
     fek_label: "ΦΕΚ",
-    hectares: "εκτάρια", stremma: "στρέμματα",
     address_label: "Διεύθυνση",
     no_coords: "Παρακαλώ εισάγετε συντεταγμένες.",
     kaek_not_found: "Δεν βρέθηκε τεμάχιο με αυτό το ΚΑΕΚ.",
@@ -702,9 +698,21 @@ const translations = {
     copied: "Αντιγράφηκε!",
     min_points: "Απαιτούνται τουλάχιστον 3 σημεία.",
     file_parsed: "σημεία φορτώθηκαν από το αρχείο",
+    tab_report: "Αναφορά",
+    report_title: "Αναφορά Ελέγχου Ακινήτου",
+    report_desc: "Εισάγετε ΚΑΕΚ για αυτόματη δημιουργία αναφοράς ελέγχου ακινήτου με AI και ζωντανά κρατικά δεδομένα.",
+    generate_report_btn: "ΔΗΜΙΟΥΡΓΙΑ ΑΝΑΦΟΡΑΣ",
+    ai_report: "AI Αναφορά Ακινήτου",
+    report_loading: "Ανάκτηση κρατικών δεδομένων & δημιουργία αναφοράς AI...",
+    report_done: "Αναφορά ολοκληρώθηκε",
+    report_error: "Σφάλμα δημιουργίας αναφοράς",
+    copy_report: "Αντιγραφή Αναφοράς",
+    report_disclaimer: "Αναφορά δημιουργημένη με AI βάσει ζωντανών κρατικών δεδομένων. Πάντα να επαληθεύετε με αδειοδοτημένο μηχανικό.",
+    no_restrictions: "Χωρίς περιορισμούς",
+    has_restrictions: "Περιορισμοί",
   },
   en: {
-    tab_convert: "Convert", tab_area: "Area", tab_zoning: "Zoning",
+    tab_convert: "Convert", tab_zoning: "Zoning",
     convert_title: "Coordinate Converter",
     input_system: "Input System", output_system: "Output System",
     all_systems: "All Systems",
@@ -713,11 +721,6 @@ const translations = {
     drop_zone_text: "Drop .txt / .csv / .tsv file here or click to browse",
     results: "Results",
     download_csv: "Download CSV", export_xlsx: "Export XLSX", copy_table: "Copy Table",
-    area_title: "Polygon Area Calculator",
-    coord_system: "Coordinate System",
-    calc_area_btn: "CALCULATE AREA",
-    area_result: "Area Result",
-    copy_result: "Copy Result",
     zoning_title: "Zoning Check",
     find_btn: "FIND",
     intended_use: "Intended Use",
@@ -734,7 +737,6 @@ const translations = {
     floors_label: "Floors", min_lot_label: "Min Lot (m²)",
     frontage_label: "Frontage (m)", building_sys_label: "Building System",
     fek_label: "FEK",
-    hectares: "hectares", stremma: "stremma",
     address_label: "Address",
     no_coords: "Please enter coordinates.",
     kaek_not_found: "No parcel found for this KAEK.",
@@ -742,6 +744,18 @@ const translations = {
     copied: "Copied!",
     min_points: "At least 3 points are required.",
     file_parsed: "points loaded from file",
+    tab_report: "Report",
+    report_title: "Property Due Diligence Report",
+    report_desc: "Enter a KAEK code to generate a full AI-powered property assessment report using live government data.",
+    generate_report_btn: "GENERATE REPORT",
+    ai_report: "AI Property Report",
+    report_loading: "Fetching government data & generating AI report...",
+    report_done: "Report complete",
+    report_error: "Error generating report",
+    copy_report: "Copy Report",
+    report_disclaimer: "AI-generated report based on live government data. Always verify with a licensed surveyor before making decisions.",
+    no_restrictions: "No restrictions",
+    has_restrictions: "Restrictions found",
   }
 };
 
@@ -1279,32 +1293,6 @@ function handleConvertFile(event) {
   reader.readAsText(file);
 }
 
-function handleAreaFile(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const sys = document.getElementById('area-input-system').value;
-    const points = parseBulkCoordinates(e.target.result, sys);
-    if (points.length < 3) { showToast(t('min_points')); return; }
-
-    // Fill the manual points list
-    const list = document.getElementById('area-points-list');
-    list.innerHTML = '';
-    points.forEach(([v1, v2, name]) => {
-      const row = document.createElement('div');
-      row.className = 'point-row';
-      row.innerHTML = `<input type="text" value="${v1}"><input type="text" value="${v2}"><button class="remove-btn" onclick="removeAreaPoint(this)">&times;</button>`;
-      list.appendChild(row);
-    });
-    document.getElementById('area-point-counter').textContent = points.length;
-    showToast(points.length + ' ' + t('file_parsed'));
-    switchInputMode('area', 'manual');
-    doCalculateArea();
-  };
-  reader.readAsText(file);
-}
-
 /* ========================================================================
    EXPORT
    ======================================================================== */
@@ -1358,134 +1346,6 @@ function copyConvertTable() {
     text += cells.join('\t') + '\n';
   });
   copyValue(text);
-}
-
-/* ========================================================================
-   AREA TAB
-   ======================================================================== */
-let areaMap = null, areaPolygon = null, areaMarkers = [];
-
-function addAreaPoint() {
-  const list = document.getElementById('area-points-list');
-  const row = document.createElement('div');
-  row.className = 'point-row';
-  row.innerHTML = '<input type="text" placeholder="X / Lat"><input type="text" placeholder="Y / Lon"><button class="remove-btn" onclick="removeAreaPoint(this)">&times;</button>';
-  list.appendChild(row);
-  document.getElementById('area-point-counter').textContent = list.children.length;
-}
-
-function removeAreaPoint(btn) {
-  const list = document.getElementById('area-points-list');
-  if (list.children.length > 3) {
-    btn.closest('.point-row').remove();
-    document.getElementById('area-point-counter').textContent = list.children.length;
-  }
-}
-
-function shoelaceArea(points) {
-  let area = 0;
-  const n = points.length;
-  for (let i = 0; i < n; i++) {
-    const j = (i + 1) % n;
-    area += points[i][0] * points[j][1];
-    area -= points[j][0] * points[i][1];
-  }
-  return Math.abs(area) / 2;
-}
-
-function doCalculateArea() {
-  const sys = document.getElementById('area-input-system').value;
-  const rows = document.querySelectorAll('#area-points-list .point-row');
-  const egsaPoints = [], wgsPoints = [];
-
-  rows.forEach(row => {
-    const inputs = row.querySelectorAll('input');
-    const v1s = inputs[0].value.trim(), v2s = inputs[1].value.trim();
-    if (!v1s || !v2s) return;
-    const v1 = sys === 'wgs84_dms' ? v1s : parseFloat(v1s);
-    const v2 = sys === 'wgs84_dms' ? v2s : parseFloat(v2s);
-    if (sys !== 'wgs84_dms' && (isNaN(v1) || isNaN(v2))) return;
-    const [ex, ey] = pointToEgsa87(sys, v1, v2);
-    const [wLat, wLon] = pointToWgs84(sys, v1, v2);
-    egsaPoints.push([ex, ey]);
-    wgsPoints.push([wLat, wLon]);
-  });
-
-  if (egsaPoints.length < 3) { showToast(t('min_points')); return; }
-
-  const areaM2 = shoelaceArea(egsaPoints);
-  document.getElementById('area-m2').textContent = areaM2.toFixed(2) + ' m\u00B2';
-  document.getElementById('area-extra').textContent =
-    (areaM2 / 10000).toFixed(4) + ' ' + t('hectares') + '  |  ' +
-    (areaM2 / 1000).toFixed(3) + ' ' + t('stremma');
-
-  // EGSA87 table
-  const table = document.getElementById('area-egsa-table');
-  let html = '<thead><tr><th>#</th><th>EGSA87 X</th><th>EGSA87 Y</th></tr></thead><tbody>';
-  egsaPoints.forEach(([x, y], i) => {
-    html += `<tr><td>${i+1}</td><td>${x.toFixed(3)}</td><td>${y.toFixed(3)}</td></tr>`;
-  });
-  html += '</tbody>';
-  table.innerHTML = html;
-
-  // Centroid geocode
-  const cLat = wgsPoints.reduce((s, p) => s + p[0], 0) / wgsPoints.length;
-  const cLon = wgsPoints.reduce((s, p) => s + p[1], 0) / wgsPoints.length;
-  reverseGeocode(cLat, cLon, 'area-address');
-
-  // Show results first so map container is visible, then render map
-  document.getElementById('area-results').style.display = '';
-  setTimeout(() => renderAreaMap(wgsPoints), 50);
-
-  // Store for export
-  window._areaEgsaPoints = egsaPoints;
-  window._areaM2 = areaM2;
-}
-
-function renderAreaMap(wgsPoints) {
-  const container = document.getElementById('area-map');
-  if (areaMap) { areaMap.remove(); areaMap = null; }
-  areaMap = L.map(container).setView([wgsPoints[0][0], wgsPoints[0][1]], 15);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap', maxZoom: 19
-  }).addTo(areaMap);
-
-  const latlngs = wgsPoints.map(p => [p[0], p[1]]);
-  areaPolygon = L.polygon(latlngs, { color: '#2563eb', fillOpacity: 0.15 }).addTo(areaMap);
-  areaMap.fitBounds(areaPolygon.getBounds().pad(0.1));
-  areaMap.invalidateSize();
-
-  areaMarkers.forEach(m => m.remove());
-  areaMarkers = [];
-  wgsPoints.forEach((p, i) => {
-    const marker = L.marker([p[0], p[1]], {
-      icon: L.divIcon({
-        className: '',
-        html: `<div style="background:var(--accent);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);">${i+1}</div>`,
-        iconSize: [24, 24], iconAnchor: [12, 12],
-      })
-    }).addTo(areaMap);
-    areaMarkers.push(marker);
-  });
-}
-
-function copyAreaResult() {
-  if (!window._areaM2) return;
-  const m2 = window._areaM2;
-  const text = `Area: ${m2.toFixed(2)} m\u00B2\n${(m2/10000).toFixed(4)} hectares\n${(m2/1000).toFixed(3)} stremma`;
-  copyValue(text);
-}
-
-function exportAreaCSV() {
-  if (!window._areaEgsaPoints) return;
-  let csv = 'Point,EGSA87_X,EGSA87_Y\n';
-  window._areaEgsaPoints.forEach(([x, y], i) => {
-    csv += `${i+1},${x.toFixed(3)},${y.toFixed(3)}\n`;
-  });
-  csv += `\nArea_m2,${window._areaM2.toFixed(2)}\n`;
-  csv += `Hectares,${(window._areaM2/10000).toFixed(4)}\n`;
-  csv += `Stremma,${(window._areaM2/1000).toFixed(3)}\n`;
-  downloadFile(csv, 'topotools_area.csv', 'text/csv');
 }
 
 /* ========================================================================
@@ -1639,12 +1499,115 @@ function renderZoningMap(data) {
 }
 
 /* ========================================================================
+   REPORT TAB
+   ======================================================================== */
+let reportMap = null;
+
+function simpleMarkdown(md) {
+  // Minimal markdown -> HTML: headers, bold, lists, paragraphs
+  let html = md
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^\- (.+)$/gm, '<li>$1</li>')
+    .replace(/^\* (.+)$/gm, '<li>$1</li>')
+    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+  // Wrap consecutive <li> in <ul>
+  html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
+  // Paragraphs for remaining text
+  html = html.replace(/\n\n/g, '</p><p>');
+  return '<p>' + html + '</p>';
+}
+
+function doGenerateReport() {
+  let kaek = document.getElementById('report-kaek').value.trim();
+  kaek = kaek.replace(/^KAEK\s*/i, '').replace(/^ΚΑΕΚ\s*/i, '').trim();
+  if (!kaek) return;
+
+  const btn = document.getElementById('report-btn');
+  btn.disabled = true;
+
+  // Show loading
+  const statusBar = document.getElementById('report-status-bar');
+  statusBar.style.display = '';
+  statusBar.innerHTML = `<div class="report-status loading"><span class="dot-pulse"></span> ${t('report_loading')}</div>`;
+  document.getElementById('report-output').style.display = 'none';
+
+  fetch('/api/v1/report/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ kaek }),
+  })
+  .then(r => {
+    if (!r.ok) return r.json().then(e => { throw new Error(e.detail || 'Request failed'); });
+    return r.json();
+  })
+  .then(data => {
+    statusBar.innerHTML = `<div class="report-status done">${t('report_done')}</div>`;
+
+    // Meta grid
+    const coordsStr = data.x != null ? `${data.x.toFixed(2)}, ${data.y.toFixed(2)}` : '-';
+    document.getElementById('report-meta').innerHTML = `
+      <div class="meta-item"><label>KAEK</label><div class="meta-value">${escapeHtml(data.kaek)}</div></div>
+      <div class="meta-item"><label>EGSA87</label><div class="meta-value">${coordsStr}</div></div>
+      ${data.area_m2 ? '<div class="meta-item"><label>' + t('plot_area') + '</label><div class="meta-value">' + data.area_m2.toFixed(2) + ' m\u00B2</div></div>' : ''}
+      ${data.municipality ? '<div class="meta-item"><label>' + t('municipality_label') + '</label><div class="meta-value">' + escapeHtml(data.municipality) + '</div></div>' : ''}
+      ${data.address ? '<div class="meta-item"><label>Address</label><div class="meta-value">' + escapeHtml(data.address) + '</div></div>' : ''}
+      ${data.postal_code ? '<div class="meta-item"><label>T.K.</label><div class="meta-value">' + escapeHtml(data.postal_code) + '</div></div>' : ''}
+      <div class="meta-item"><label>Data Sources</label><div class="meta-value">${data.layers_queried || 0} layers queried</div></div>
+    `;
+
+    // Restriction badge
+    const badge = document.getElementById('report-restriction-badge');
+    if (data.has_restrictions) {
+      badge.className = 'restriction-badge flagged';
+      badge.textContent = t('has_restrictions');
+    } else {
+      badge.className = 'restriction-badge clean';
+      badge.textContent = t('no_restrictions');
+    }
+
+    // Report content (markdown -> HTML)
+    document.getElementById('report-content').innerHTML = simpleMarkdown(data.report_md);
+
+    // Map
+    if (data.lat && data.lon) {
+      document.getElementById('report-output').style.display = '';
+      setTimeout(() => {
+        const container = document.getElementById('report-map');
+        if (reportMap) { reportMap.remove(); reportMap = null; }
+        reportMap = L.map(container).setView([data.lat, data.lon], 16);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap', maxZoom: 19
+        }).addTo(reportMap);
+        const color = data.has_restrictions ? '#ef4444' : '#22c55e';
+        L.circleMarker([data.lat, data.lon], { radius: 8, color, fillColor: color, fillOpacity: 0.8, weight: 2 }).addTo(reportMap);
+        L.circle([data.lat, data.lon], { radius: 100, color, fillOpacity: 0.08, weight: 1 }).addTo(reportMap);
+        reportMap.invalidateSize();
+        reverseGeocode(data.lat, data.lon, 'report-address');
+      }, 50);
+    }
+
+    document.getElementById('report-output').style.display = '';
+  })
+  .catch(err => {
+    statusBar.innerHTML = `<div class="report-status error">${t('report_error')}: ${escapeHtml(err.message)}</div>`;
+  })
+  .finally(() => { btn.disabled = false; });
+}
+
+function copyReport() {
+  const content = document.getElementById('report-content').innerText;
+  copyValue(content);
+}
+
+/* ========================================================================
    INIT
    ======================================================================== */
 document.addEventListener('DOMContentLoaded', function() {
   setLanguage(currentLang);
   setupDropZone('convert-drop-zone', 'convert-file-input', handleConvertFile, 'convert');
-  setupDropZone('area-drop-zone', 'area-file-input', handleAreaFile, 'area');
 });
 </script>
 </body>
