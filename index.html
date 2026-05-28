@@ -1428,15 +1428,14 @@ function doCalculateArea() {
   html += '</tbody>';
   table.innerHTML = html;
 
-  // Map
-  renderAreaMap(wgsPoints);
-
   // Centroid geocode
   const cLat = wgsPoints.reduce((s, p) => s + p[0], 0) / wgsPoints.length;
   const cLon = wgsPoints.reduce((s, p) => s + p[1], 0) / wgsPoints.length;
   reverseGeocode(cLat, cLon, 'area-address');
 
+  // Show results first so map container is visible, then render map
   document.getElementById('area-results').style.display = '';
+  setTimeout(() => renderAreaMap(wgsPoints), 50);
 
   // Store for export
   window._areaEgsaPoints = egsaPoints;
@@ -1454,6 +1453,7 @@ function renderAreaMap(wgsPoints) {
   const latlngs = wgsPoints.map(p => [p[0], p[1]]);
   areaPolygon = L.polygon(latlngs, { color: '#2563eb', fillOpacity: 0.15 }).addTo(areaMap);
   areaMap.fitBounds(areaPolygon.getBounds().pad(0.1));
+  areaMap.invalidateSize();
 
   areaMarkers.forEach(m => m.remove());
   areaMarkers = [];
@@ -1611,10 +1611,9 @@ function renderZoningResults(data) {
   document.getElementById('zoning-data-source').textContent = data.data_source || '';
   document.getElementById('zoning-disclaimer').textContent = data.disclaimer || '';
 
-  // Map
-  renderZoningMap(data);
-
+  // Show results first so map container is visible, then render map
   document.getElementById('zoning-results').style.display = '';
+  setTimeout(() => renderZoningMap(data), 50);
 }
 
 function renderZoningMap(data) {
@@ -1635,6 +1634,7 @@ function renderZoningMap(data) {
   L.circleMarker([lat, lon], { radius: 8, color, fillColor: color, fillOpacity: 0.8, weight: 2 }).addTo(zoningMap);
   L.circle([lat, lon], { radius: 100, color, fillOpacity: 0.08, weight: 1 }).addTo(zoningMap);
 
+  zoningMap.invalidateSize();
   reverseGeocode(lat, lon, 'zoning-address');
 }
 
