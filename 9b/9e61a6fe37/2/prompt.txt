@@ -1,0 +1,48 @@
+run it to test
+
+---
+
+run the app
+
+---
+
+evaluate this project at this state
+
+---
+
+remove the area tab and its usage. we are not going to use it. also erase it from prd and every instance it exists
+
+---
+
+[Terminal 5b3d4f0e-3114-4e5d-a3ad-2ad8a616e757 notification: command completed with exit code 143. The terminal has been cleaned up.]
+Terminal output:
+manos.dam@172 panathenea-hackathon %  /Users/manos.dam/zone01/panathenea-hackathon/.venv/bin/python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000
+INFO:     Started server process [26805]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:52572 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52575 - "POST /api/v1/zoning/kaek HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52578 - "POST /api/v1/zoning/kaek HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52581 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52583 - "GET /apple-touch-icon-precomposed.png HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52581 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52583 - "GET /apple-touch-icon.png HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52583 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52585 - "POST /api/v1/zoning/kaek HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52589 - "POST /api/v1/zoning/kaek HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52593 - "POST /api/v1/zoning/kaek HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52593 - "POST /api/v1/zoning/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52663 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52664 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52708 - "POST /api/v1/zoning/kaek HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52798 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52811 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52813 - "POST /api/v1/zoning/kaek HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52813 - "POST /api/v1/zoning/check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52964 - "GET / HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [26805]
+zsh: terminated  /Users/manos.dam/zone01/panathenea-hackathon/.venv/bin/python -m uvicorn
