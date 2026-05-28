@@ -1,0 +1,9 @@
+read @BUILD_SPEC.md
+
+---
+
+not yet, make a plan for the building process first. Note that we will follow a TDD method. Make a prd.md appropriate for this project and then make a tasks.md that will be a guide for the completion of the project
+
+---
+
+let's start building, begin with phase 0
