@@ -1,11 +1,7 @@
-"""AI property report generation using Google Gemini (free tier)."""
+"""AI property report generation using Anthropic Claude."""
 
 import os
-import asyncio
-import httpx
-
-
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+import anthropic
 
 
 def _extract_label(features: list) -> str | None:
@@ -361,52 +357,28 @@ IMPORTANT RULES:
 
 
 async def generate_property_report(all_layers: dict, kaek_info: dict) -> str:
-    """Generate an AI property due diligence report using Gemini."""
+    """Generate an AI property due diligence report using Claude."""
     layer_data = _format_layer_data(all_layers, kaek_info)
 
-    api_key = os.environ.get("GEMINI_API_KEY", "")
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
-        return "Error: GEMINI_API_KEY not set. Get a free key at https://aistudio.google.com/apikey"
+        return "Error: ANTHROPIC_API_KEY not set."
 
-    payload = {
-        "contents": [
-            {
-                "parts": [
-                    {"text": SYSTEM_PROMPT + "\n\nRAW GOVERNMENT DATA:\n" + layer_data}
-                ]
-            }
-        ],
-        "generationConfig": {
-            "maxOutputTokens": 4000,
-            "temperature": 0.2,
-        },
-    }
-
-    last_error = None
-    for attempt in range(3):
-        try:
-            async with httpx.AsyncClient(timeout=60.0) as client:
-                resp = await client.post(
-                    GEMINI_API_URL,
-                    params={"key": api_key},
-                    json=payload,
-                )
-                if resp.status_code == 429:
-                    last_error = "Rate limited by Gemini API"
-                    await asyncio.sleep(2 ** attempt)
-                    continue
-                resp.raise_for_status()
-                data = resp.json()
-        except httpx.HTTPStatusError as e:
-            return f"Error: Gemini API returned {e.response.status_code}: {e.response.text[:200]}"
-        except Exception as e:
-            return f"Error calling Gemini API: {str(e)}"
-
-        candidates = data.get("candidates", [])
-        if not candidates:
-            return "Error: No response from Gemini API. Response: " + str(data)[:300]
-
-        parts = candidates[0].get("content", {}).get("parts", [])
-        return parts[0].get("text", "") if parts else "Error: Empty response."
-
-    return f"Error: {last_error}. Try again in a moment."
+    try:
+        client = anthropic.AsyncAnthropic(api_key=api_key)
+        message = await client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=4000,
+            temperature=0.2,
+            system=SYSTEM_PROMPT,
+            messages=[
+                {"role": "user", "content": "RAW GOVERNMENT DATA:\n" + layer_data}
+            ],
+        )
+        return message.content[0].text
+    except anthropic.RateLimitError:
+        return "Error: Claude API rate limited. Try again in a moment."
+    except anthropic.APIError as e:
+        return f"Error: Claude API returned {e.status_code}: {str(e)[:200]}"
+    except Exception as e:
+        return f"Error calling Claude API: {str(e)}"
