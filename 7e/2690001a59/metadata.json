@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.6.3",
+  "checkpoint_id": "7e2690001a59",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "backend/services/coordinate_converter.py",
+    "tests/test_coordinate_converter.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/7e/2690001a59/0/metadata.json",
+      "transcript": "/7e/2690001a59/0/full.jsonl",
+      "content_hash": "/7e/2690001a59/0/content_hash.txt",
+      "prompt": "/7e/2690001a59/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 17,
+    "cache_creation_tokens": 16311,
+    "cache_read_tokens": 363215,
+    "output_tokens": 10122,
+    "api_call_count": 11
+  }
+}
