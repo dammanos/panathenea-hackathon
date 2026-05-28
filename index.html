@@ -632,45 +632,6 @@ a.fek-link:hover { text-decoration: underline; }
           <button class="btn btn-sm" style="width:auto;" onclick="doKaekLookup()" data-i18n="find_btn">FIND</button>
         </div>
       </div>
-
-      <hr style="border:none; border-top:1px solid var(--border); margin:16px 0;">
-
-      <!-- Coord system toggle -->
-      <div class="input-group">
-        <label data-i18n="coord_system">Coordinate System</label>
-        <select id="zoning-coord-system" onchange="updateZoningInputFields()">
-          <option value="egsa87">EGSA87</option>
-          <option value="wgs84">WGS84</option>
-        </select>
-      </div>
-
-      <div id="zoning-egsa-fields" class="input-row">
-        <div class="input-group"><label>X (Easting)</label><input type="number" id="zoning-x" step="any"></div>
-        <div class="input-group"><label>Y (Northing)</label><input type="number" id="zoning-y" step="any"></div>
-      </div>
-      <div id="zoning-wgs-fields" class="input-row" style="display:none;">
-        <div class="input-group"><label>Latitude</label><input type="number" id="zoning-lat" step="any"></div>
-        <div class="input-group"><label>Longitude</label><input type="number" id="zoning-lon" step="any"></div>
-      </div>
-
-      <div class="input-row">
-        <div class="input-group">
-          <label data-i18n="intended_use">Intended Use</label>
-          <select id="zoning-use">
-            <option value="residential" data-i18n="use_residential">Residential</option>
-            <option value="commercial" data-i18n="use_commercial">Commercial</option>
-            <option value="industrial" data-i18n="use_industrial">Industrial</option>
-            <option value="agricultural" data-i18n="use_agricultural">Agricultural</option>
-            <option value="tourism" data-i18n="use_tourism">Tourism</option>
-          </select>
-        </div>
-        <div class="input-group">
-          <label data-i18n="plot_area">Plot Area (m2, optional)</label>
-          <input type="number" id="zoning-area" step="any">
-        </div>
-      </div>
-
-      <button class="btn" onclick="doZoningCheck()" data-i18n="check_zoning_btn">CHECK ZONING</button>
     </div>
 
     <div class="spinner" id="zoning-spinner"></div>
@@ -737,6 +698,7 @@ const translations = {
     address_label: "Διεύθυνση",
     no_coords: "Παρακαλώ εισάγετε συντεταγμένες.",
     kaek_not_found: "Δεν βρέθηκε τεμάχιο με αυτό το ΚΑΕΚ.",
+    running_check: "Έλεγχος πολεοδομίας...",
     copied: "Αντιγράφηκε!",
     min_points: "Απαιτούνται τουλάχιστον 3 σημεία.",
     file_parsed: "σημεία φορτώθηκαν από το αρχείο",
@@ -776,6 +738,7 @@ const translations = {
     address_label: "Address",
     no_coords: "Please enter coordinates.",
     kaek_not_found: "No parcel found for this KAEK.",
+    running_check: "Running zoning check...",
     copied: "Copied!",
     min_points: "At least 3 points are required.",
     file_parsed: "points loaded from file",
@@ -1530,17 +1493,17 @@ function exportAreaCSV() {
    ======================================================================== */
 let zoningMap = null;
 
-function updateZoningInputFields() {
-  const sys = document.getElementById('zoning-coord-system').value;
-  document.getElementById('zoning-egsa-fields').style.display = sys === 'egsa87' ? '' : 'none';
-  document.getElementById('zoning-wgs-fields').style.display = sys === 'wgs84' ? '' : 'none';
-}
+// Store resolved coords from KAEK lookup
+let zoningCoords = { lat: null, lon: null, x: null, y: null, area_m2: null };
 
 function doKaekLookup() {
   let kaek = document.getElementById('zoning-kaek').value.trim();
   // Strip KAEK prefix
   kaek = kaek.replace(/^KAEK\s*/i, '').replace(/^ΚΑΕΚ\s*/i, '').trim();
   if (!kaek) return;
+
+  document.getElementById('zoning-spinner').classList.add('active');
+  document.getElementById('zoning-results').style.display = 'none';
 
   fetch('/api/v1/zoning/kaek', {
     method: 'POST',
@@ -1549,43 +1512,41 @@ function doKaekLookup() {
   })
   .then(r => r.json())
   .then(data => {
-    if (!data.found) { showToast(t('kaek_not_found')); return; }
-    // Auto-fill coordinates
-    if (data.x != null && data.y != null) {
-      document.getElementById('zoning-coord-system').value = 'egsa87';
-      updateZoningInputFields();
-      document.getElementById('zoning-x').value = data.x.toFixed(3);
-      document.getElementById('zoning-y').value = data.y.toFixed(3);
+    if (!data.found) {
+      showToast(t('kaek_not_found'));
+      document.getElementById('zoning-spinner').classList.remove('active');
+      return;
     }
-    if (data.lat != null && data.lon != null) {
-      document.getElementById('zoning-lat').value = data.lat.toFixed(8);
-      document.getElementById('zoning-lon').value = data.lon.toFixed(8);
-    }
-    if (data.area_m2) {
-      document.getElementById('zoning-area').value = data.area_m2;
-    }
-    showToast('KAEK ' + kaek + ' found');
+    // Store resolved coordinates
+    zoningCoords = {
+      lat: data.lat, lon: data.lon,
+      x: data.x, y: data.y,
+      area_m2: data.area_m2 || null,
+    };
+    showToast('KAEK ' + kaek + ' — ' + t('running_check'));
+    // Auto-run zoning check
+    doZoningCheck();
   })
-  .catch(() => showToast(t('kaek_not_found')));
+  .catch(() => {
+    showToast(t('kaek_not_found'));
+    document.getElementById('zoning-spinner').classList.remove('active');
+  });
 }
 
 function doZoningCheck() {
-  const sys = document.getElementById('zoning-coord-system').value;
-  const body = {
-    coord_system: sys,
-    intended_use: document.getElementById('zoning-use').value,
-    area_m2: parseFloat(document.getElementById('zoning-area').value) || null,
-  };
-
-  if (sys === 'egsa87') {
-    body.x = parseFloat(document.getElementById('zoning-x').value);
-    body.y = parseFloat(document.getElementById('zoning-y').value);
-    if (isNaN(body.x) || isNaN(body.y)) { showToast(t('no_coords')); return; }
-  } else {
-    body.lat = parseFloat(document.getElementById('zoning-lat').value);
-    body.lon = parseFloat(document.getElementById('zoning-lon').value);
-    if (isNaN(body.lat) || isNaN(body.lon)) { showToast(t('no_coords')); return; }
+  if (zoningCoords.lat == null || zoningCoords.lon == null) {
+    showToast(t('no_coords'));
+    document.getElementById('zoning-spinner').classList.remove('active');
+    return;
   }
+
+  const body = {
+    coord_system: 'wgs84',
+    lat: zoningCoords.lat,
+    lon: zoningCoords.lon,
+    intended_use: 'residential',
+    area_m2: zoningCoords.area_m2,
+  };
 
   document.getElementById('zoning-spinner').classList.add('active');
   document.getElementById('zoning-results').style.display = 'none';
@@ -1608,10 +1569,15 @@ function renderZoningResults(data) {
     `<div class="verdict-card verdict-${data.verdict}">${vEmoji} ${escapeHtml(data.verdict_summary)}</div>`;
 
   // Meta grid
+  const kaekVal = document.getElementById('zoning-kaek').value.trim().replace(/^KAEK\s*/i, '').replace(/^ΚΑΕΚ\s*/i, '');
+  const coordsStr = zoningCoords.x != null ? `${zoningCoords.x.toFixed(2)}, ${zoningCoords.y.toFixed(2)}` : zoningCoords.lat != null ? `${zoningCoords.lat.toFixed(6)}, ${zoningCoords.lon.toFixed(6)}` : '-';
   document.getElementById('zoning-meta').innerHTML = `
-    <div class="meta-item"><label>${t('municipality_label')}</label><div class="meta-value">${escapeHtml(data.municipality || '-')}</div></div>
-    <div class="meta-item"><label>${t('land_use_label')}</label><div class="meta-value">${escapeHtml(data.land_use || '-')}</div></div>
+    <div class="meta-item"><label>KAEK</label><div class="meta-value">${escapeHtml(kaekVal || '-')}</div></div>
+    <div class="meta-item"><label>EGSA87</label><div class="meta-value">${coordsStr}</div></div>
     <div class="meta-item"><label>${t('zone_label')}</label><div class="meta-value">${escapeHtml(data.zone_name || '-')}</div></div>
+    <div class="meta-item"><label>${t('land_use_label')}</label><div class="meta-value">${escapeHtml(data.land_use || '-')}</div></div>
+    <div class="meta-item"><label>${t('municipality_label')}</label><div class="meta-value">${escapeHtml(data.municipality || '-')}</div></div>
+    ${zoningCoords.area_m2 ? '<div class="meta-item"><label>' + t('plot_area') + '</label><div class="meta-value">' + zoningCoords.area_m2.toFixed(2) + ' m\u00B2</div></div>' : ''}
   `;
 
   // Risk flags
@@ -1652,17 +1618,9 @@ function renderZoningResults(data) {
 }
 
 function renderZoningMap(data) {
-  // Get WGS84 coords for map
-  let lat, lon;
-  const sys = document.getElementById('zoning-coord-system').value;
-  if (sys === 'egsa87') {
-    const x = parseFloat(document.getElementById('zoning-x').value);
-    const y = parseFloat(document.getElementById('zoning-y').value);
-    [lat, lon] = egsa87ToWgs84(x, y);
-  } else {
-    lat = parseFloat(document.getElementById('zoning-lat').value);
-    lon = parseFloat(document.getElementById('zoning-lon').value);
-  }
+  const lat = zoningCoords.lat;
+  const lon = zoningCoords.lon;
+  if (lat == null || lon == null) return;
 
   const container = document.getElementById('zoning-map');
   if (zoningMap) { zoningMap.remove(); zoningMap = null; }
