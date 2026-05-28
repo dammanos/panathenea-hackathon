@@ -1,0 +1,1 @@
+make sure it works perfect with drag and drop.
