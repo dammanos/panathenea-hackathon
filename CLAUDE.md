@@ -30,10 +30,13 @@ python -m pytest tests/test_coordinate_converter.py -x -q
 - `services/tee_service.py` — ArcGIS REST API client for TEE's Unified Digital Map. `get_all_layers(lat, lon)` queries all layers in one parallel batch. `get_kaek_parcel(kaek)` looks up parcels by cadastral code. Layers include building parameters, permits, environmental restrictions, archaeological zones, FEK documents, and survey diagrams.
 - `services/ai_report.py` — Formats raw GIS data into structured text, sends to Claude Sonnet with a Greek surveyor system prompt. `_format_layer_data()` is the data preparation function; `generate_property_report()` calls the Anthropic API.
 - `services/coordinate_converter.py` — Pure-math coordinate transforms between EGSA87, WGS84, GGRS87, HTRS07, and TM07. No external geo libraries. The Helmert 7-parameter transform is hardcoded for the Greek datum.
+- `services/buildability.py` — Deterministic (no-AI) buildability engine. Parses Greek-formatted TEE labels, then computes max floor area, footprint, indicative floors, and the άρτιο check. `extract_building_params()` bridges `get_all_layers()` output → input. The report endpoint feeds the result to Claude as authoritative ground-truth.
+- `services/objective_value.py` + `routers/value.py` — Deterministic αντικειμενική αξία calculator (ΠΟΛ.1149/1994) for within-plan dwellings, exposed at `POST /api/v1/value/objective`. Encodes the authoritative age/frontage coefficients; matrix coefficients (Σ.Ο. etc.) are flagged inputs, never fabricated.
 
-**Frontend** (`index.html`): Single-file vanilla JS app with two tabs:
-- **Report** — KAEK input → AI property report with map, metadata grid, restriction badges
+**Frontend** (`index.html`): Single-file vanilla JS app with three tabs:
+- **Report** — KAEK input → AI property report with map, metadata grid, restriction badges, and a computed-buildability panel
 - **Convert** — Multi-point coordinate converter with file upload (TXT/CSV/TSV), manual entry, and export (CSV/XLSX)
+- **Value** — Objective-value calculator: enter zone price + building attributes → audited αντικειμενική αξία
 
 Uses Leaflet for maps, IBM Plex fonts, dark/light theme toggle, Greek/English i18n.
 

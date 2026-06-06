@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from backend.routers import report
+from backend.routers import report, value
 
 load_dotenv()
 
@@ -26,6 +26,7 @@ app.add_middleware(
 )
 
 app.include_router(report.router)
+app.include_router(value.router)
 app.mount("/static", StaticFiles(directory=str(PROJECT_ROOT)), name="static")
 
 

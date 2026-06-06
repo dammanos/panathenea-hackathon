@@ -461,6 +461,7 @@ a.fek-link:hover { text-decoration: underline; }
   <div class="tab-bar">
     <button class="tab-btn active" data-tab="report" data-i18n="tab_report" onclick="switchTab('report')">Report</button>
     <button class="tab-btn" data-tab="convert" data-i18n="tab_convert" onclick="switchTab('convert')">Convert</button>
+    <button class="tab-btn" data-tab="value" data-i18n="tab_value" onclick="switchTab('value')">Value</button>
   </div>
 
   <!-- ===== TAB 0: REPORT ===== -->
@@ -582,6 +583,70 @@ a.fek-link:hover { text-decoration: underline; }
     </div>
   </div>
 
+  <!-- ===== TAB 2: VALUE ===== -->
+  <div class="tab-panel" id="tab-value">
+    <div class="card">
+      <div class="card-title" data-i18n="value_title">Objective Value</div>
+      <p class="muted" style="font-size:13px;margin:-4px 0 14px;" data-i18n="value_desc">Compute the objective property value (αντικειμενική αξία) for a within-plan dwelling. All coefficients are shown for auditability.</p>
+
+      <div class="input-row">
+        <div class="input-group">
+          <label data-i18n="value_zone_price">Zone Price Τ.Ζ. (€/m²)</label>
+          <input type="number" id="val-zone-price" step="0.01" min="0" placeholder="e.g. 1500">
+        </div>
+        <div class="input-group">
+          <label data-i18n="value_area">Area (m²)</label>
+          <input type="number" id="val-area" step="0.01" min="0" placeholder="e.g. 100">
+        </div>
+      </div>
+      <div class="muted" style="font-size:12px;margin:-6px 0 12px;">
+        <span data-i18n="value_zone_help">Find the zone price (Τ.Ζ.) at</span>
+        <a href="https://maps.gsis.gr/valuemaps/" target="_blank" rel="noopener">valuemaps.gsis.gr</a>
+      </div>
+
+      <div class="input-row">
+        <div class="input-group">
+          <label data-i18n="value_year">Year Built</label>
+          <input type="number" id="val-year" step="1" placeholder="e.g. 2010">
+        </div>
+        <div class="input-group">
+          <label data-i18n="value_frontage">Street frontage</label>
+          <select id="val-frontage">
+            <option value="true" data-i18n="value_yes">Yes</option>
+            <option value="false" data-i18n="value_no">No</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-row">
+        <div class="input-group">
+          <label data-i18n="value_floor_coef">Floor coeff. (Σ.Ο.)</label>
+          <input type="number" id="val-floor" step="0.01" value="1.00">
+        </div>
+        <div class="input-group">
+          <label data-i18n="value_surface_coef">Surface coeff.</label>
+          <input type="number" id="val-surface" step="0.01" value="1.00">
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label data-i18n="value_comm_coef">Commerciality coeff.</label>
+          <input type="number" id="val-comm" step="0.01" value="1.00">
+        </div>
+        <div class="input-group">
+          <label data-i18n="value_coown">Co-ownership share</label>
+          <input type="number" id="val-coown" step="0.01" value="1.00">
+        </div>
+      </div>
+      <div class="muted" style="font-size:12px;margin:-6px 0 12px;" data-i18n="value_coef_help">Coefficients from the official ΑΠΑΑ tables (ΠΟΛ.1149/1994); leave at 1.00 if unknown — defaults are flagged in the result.</div>
+
+      <button class="btn" onclick="doComputeValue()" id="val-btn" data-i18n="value_compute_btn">COMPUTE</button>
+
+      <div id="value-output" style="display:none;margin-top:16px;"></div>
+      <div class="disclaimer" style="margin-top:12px;" data-i18n="value_disclaimer">Deterministic estimate per the objective-value system for within-plan dwellings. Verify coefficients against the ΑΠΑΑ decision in force before official use.</div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Toast -->
@@ -619,6 +684,25 @@ const translations = {
     report_disclaimer: "Αναφορά δημιουργημένη με AI βάσει ζωντανών κρατικών δεδομένων. Πάντα να επαληθεύετε με αδειοδοτημένο μηχανικό.",
     no_restrictions: "Χωρίς περιορισμούς",
     has_restrictions: "Περιορισμοί",
+    tab_value: "Αξία",
+    value_title: "Αντικειμενική Αξία",
+    value_desc: "Υπολογισμός αντικειμενικής αξίας κατοικίας εντός σχεδίου. Όλοι οι συντελεστές εμφανίζονται για έλεγχο.",
+    value_zone_price: "Τιμή Ζώνης Τ.Ζ. (€/m²)",
+    value_area: "Επιφάνεια (m²)",
+    value_year: "Έτος Κατασκευής",
+    value_frontage: "Πρόσοψη σε δρόμο",
+    value_yes: "Ναι", value_no: "Όχι",
+    value_floor_coef: "Συντ. Ορόφου (Σ.Ο.)",
+    value_surface_coef: "Συντ. Επιφανείας",
+    value_comm_coef: "Συντ. Εμπορικότητας",
+    value_coown: "Ποσοστό Συνιδιοκτησίας",
+    value_zone_help: "Βρείτε την Τ.Ζ. στο",
+    value_coef_help: "Συντελεστές από τους επίσημους πίνακες ΑΠΑΑ (ΠΟΛ.1149/1994). Αφήστε 1,00 αν είναι άγνωστοι — οι προεπιλογές επισημαίνονται στο αποτέλεσμα.",
+    value_compute_btn: "ΥΠΟΛΟΓΙΣΜΟΣ",
+    value_result: "Αντικειμενική Αξία",
+    value_disclaimer: "Ντετερμινιστική εκτίμηση κατά το αντικειμενικό σύστημα για κατοικίες εντός σχεδίου. Επιβεβαιώστε τους συντελεστές με την ισχύουσα απόφαση ΑΠΑΑ πριν από επίσημη χρήση.",
+    value_computed_badge: "ΥΠΟΛΟΓΙΣΜΕΝΟ",
+    value_error: "Σφάλμα υπολογισμού",
   },
   en: {
     tab_convert: "Convert",
@@ -647,6 +731,25 @@ const translations = {
     report_disclaimer: "AI-generated report based on live government data. Always verify with a licensed surveyor before making decisions.",
     no_restrictions: "No restrictions",
     has_restrictions: "Restrictions found",
+    tab_value: "Value",
+    value_title: "Objective Value",
+    value_desc: "Compute the objective property value (αντικειμενική αξία) for a within-plan dwelling. All coefficients are shown for auditability.",
+    value_zone_price: "Zone Price Τ.Ζ. (€/m²)",
+    value_area: "Area (m²)",
+    value_year: "Year Built",
+    value_frontage: "Street frontage",
+    value_yes: "Yes", value_no: "No",
+    value_floor_coef: "Floor coeff. (Σ.Ο.)",
+    value_surface_coef: "Surface coeff.",
+    value_comm_coef: "Commerciality coeff.",
+    value_coown: "Co-ownership share",
+    value_zone_help: "Find the zone price (Τ.Ζ.) at",
+    value_coef_help: "Coefficients from the official ΑΠΑΑ tables (ΠΟΛ.1149/1994); leave at 1.00 if unknown — defaults are flagged in the result.",
+    value_compute_btn: "COMPUTE",
+    value_result: "Objective Value",
+    value_disclaimer: "Deterministic estimate per the objective-value system for within-plan dwellings. Verify coefficients against the ΑΠΑΑ decision in force before official use.",
+    value_computed_badge: "COMPUTED",
+    value_error: "Calculation error",
   }
 };
 
@@ -1298,6 +1401,61 @@ function renderBuildability(b) {
       <div class="meta-grid">${cells || '<div class="meta-value">-</div>'}</div>
       ${warns}
       <div class="disclaimer" style="margin-top:8px;">${L.note}</div>
+    </div>`;
+}
+
+function doComputeValue() {
+  const num = id => { const v = document.getElementById(id).value.trim(); return v === '' ? null : parseFloat(v); };
+  const payload = {
+    zone_price: num('val-zone-price'),
+    area_m2: num('val-area'),
+    year_built: num('val-year'),
+    has_frontage: document.getElementById('val-frontage').value === 'true',
+    floor_coefficient: num('val-floor') ?? 1.0,
+    surface_coefficient: num('val-surface') ?? 1.0,
+    commerciality_coefficient: num('val-comm') ?? 1.0,
+    coownership_share: num('val-coown') ?? 1.0,
+  };
+  const out = document.getElementById('value-output');
+  const btn = document.getElementById('val-btn');
+  btn.disabled = true;
+  fetch('/api/v1/value/objective', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  .then(r => r.json())
+  .then(data => { renderValue(data); btn.disabled = false; })
+  .catch(() => { out.style.display = ''; out.innerHTML = `<div class="card">${t('value_error')}</div>`; btn.disabled = false; });
+}
+
+function renderValue(data) {
+  const out = document.getElementById('value-output');
+  out.style.display = '';
+  const c = data.coefficients || {};
+  const fmtMoney = v => v == null ? '—' :
+    new Intl.NumberFormat(currentLang === 'el' ? 'el-GR' : 'en-US',
+      { style: 'currency', currency: 'EUR', maximumFractionDigits: 2 }).format(v);
+  const rows = [
+    ['Τ.Ζ. (€/m²)', c.zone_price], ['Επιφάνεια / Area', c.area_m2],
+    ['Σ.Παλαιότητας', c.age], ['Σ.Πρόσοψης', c.frontage],
+    ['Σ.Ορόφου', c.floor], ['Σ.Επιφανείας', c.surface],
+    ['Σ.Εμπορικότητας', c.commerciality], ['Συνιδιοκτησία', c.coownership],
+  ].filter(r => r[1] != null)
+   .map(r => `<div class="meta-item"><label>${r[0]}</label><div class="meta-value">${r[1]}</div></div>`).join('');
+  const warns = (data.warnings || []).map(w =>
+    `<div style="color:var(--warning,#d97706);font-size:13px;margin-top:6px;">⚠ ${escapeHtml(w)}</div>`).join('');
+  const notes = (data.assumptions || []).map(a =>
+    `<div class="muted" style="font-size:12px;margin-top:4px;">• ${escapeHtml(a)}</div>`).join('');
+  out.innerHTML = `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap;">
+        <div class="card-title" style="margin-bottom:0;">${t('value_result')}</div>
+        <span class="restriction-badge clean">${t('value_computed_badge')}</span>
+      </div>
+      <div class="meta-value" style="font-size:26px;font-weight:700;margin-bottom:12px;">${fmtMoney(data.objective_value)}</div>
+      <div class="meta-grid">${rows}</div>
+      ${warns}${notes}
     </div>`;
 }
 

@@ -50,6 +50,8 @@ KAEK Input ─> Ktimatologio API ─> Parcel Centroid (lat/lon)
 ## Features
 
 - **Property Report** — Full AI-generated due diligence report from a single KAEK code
+- **Buildability (computed)** — Deterministic, no-AI computation of max floor area (Σ.Δ. × area), footprint (coverage × area), indicative floors, and the άρτιο/buildable-lot check; fed to the report as authoritative ground-truth
+- **Objective Value** — Deterministic αντικειμενική αξία calculator for within-plan dwellings (ΠΟΛ.1149/1994), with every coefficient shown for auditability
 - **Coordinate Converter** — Convert between EGSA87, WGS84, GGRS87, HTRS07, and TM07. Supports manual entry, file upload (TXT/CSV/TSV), and batch export
 - **Bilingual UI** — Greek and English interface with dark/light theme
 
@@ -97,7 +99,27 @@ Returns: {
   "postal_code": "141 23",
   "has_restrictions": true,
   "layers_queried": 34,
-  "report_md": "# ΑΝΑΦΟΡΑ ΠΟΛΕΟΔΟΜΙΚΗΣ..."
+  "report_md": "# ΑΝΑΦΟΡΑ ΠΟΛΕΟΔΟΜΙΚΗΣ...",
+  "buildability": {           // deterministically computed (no AI)
+    "max_floor_area_m2": 966.7,
+    "max_footprint_m2": 725.0,
+    "indicative_max_floors": 3,
+    "is_buildable_lot": true,
+    "warnings": [], "assumptions": [ ... ]
+  }
+}
+
+POST /api/v1/value/objective
+Body: {                       // zone_price (Τ.Ζ.) from valuemaps.gsis.gr
+  "zone_price": 1500, "area_m2": 100,
+  "year_built": 2016, "has_frontage": true,
+  "floor_coefficient": 1.0, "surface_coefficient": 1.0
+}
+
+Returns: {                    // every coefficient returned for auditability
+  "objective_value": 120000.0,
+  "coefficients": { "age": 0.8, "frontage": 1.0, ... },
+  "warnings": [], "assumptions": [ ... ]
 }
 ```
 
