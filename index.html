@@ -488,6 +488,7 @@ a.fek-link:hover { text-decoration: underline; }
           </div>
         </div>
         <div class="meta-grid" id="report-meta"></div>
+        <div id="report-buildability"></div>
         <div class="map-container" id="report-map"></div>
         <div class="address-line" id="report-address"></div>
         <div class="report-output" id="report-content"></div>
@@ -1264,6 +1265,42 @@ function simpleMarkdown(md) {
   return '<p>' + html + '</p>';
 }
 
+function renderBuildability(b) {
+  const el = document.getElementById('report-buildability');
+  if (!b) { el.innerHTML = ''; return; }
+  const L = currentLang === 'el' ? {
+    title: 'Δομησιμότητα (υπολογισμένη)', computed: 'ΥΠΟΛΟΓΙΣΜΕΝΟ',
+    floor: 'Μέγιστη δόμηση', foot: 'Μέγιστη κάλυψη', floors: 'Ενδεικτικοί όροφοι',
+    artio: 'Άρτιο & οικοδομήσιμο', yes: 'ΝΑΙ', no: 'ΟΧΙ',
+    note: 'Υπολογισμός από τις πολεοδομικές παραμέτρους — όχι από AI.'
+  } : {
+    title: 'Buildability (computed)', computed: 'COMPUTED',
+    floor: 'Max floor area', foot: 'Max footprint', floors: 'Indicative floors',
+    artio: 'Buildable lot', yes: 'YES', no: 'NO',
+    note: 'Calculated deterministically from planning parameters — not AI.'
+  };
+  const item = (label, val) => val == null ? '' :
+    `<div class="meta-item"><label>${label}</label><div class="meta-value">${val}</div></div>`;
+  const cells = [
+    item(L.floor, b.max_floor_area_m2 != null ? b.max_floor_area_m2 + ' m²' : null),
+    item(L.foot, b.max_footprint_m2 != null ? b.max_footprint_m2 + ' m²' : null),
+    item(L.floors, b.indicative_max_floors),
+    item(L.artio, b.is_buildable_lot == null ? null : (b.is_buildable_lot ? L.yes : L.no)),
+  ].join('');
+  const warns = (b.warnings || []).map(w =>
+    `<div style="color:var(--warning,#d97706);font-size:13px;margin-top:6px;">⚠ ${escapeHtml(w)}</div>`).join('');
+  el.innerHTML = `
+    <div class="card" style="margin-top:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap;">
+        <div class="card-title" style="margin-bottom:0;">${L.title}</div>
+        <span class="restriction-badge clean">${L.computed}</span>
+      </div>
+      <div class="meta-grid">${cells || '<div class="meta-value">-</div>'}</div>
+      ${warns}
+      <div class="disclaimer" style="margin-top:8px;">${L.note}</div>
+    </div>`;
+}
+
 function doGenerateReport() {
   let kaek = document.getElementById('report-kaek').value.trim();
   kaek = kaek.replace(/^KAEK\s*/i, '').replace(/^ΚΑΕΚ\s*/i, '').trim();
@@ -1311,6 +1348,9 @@ function doGenerateReport() {
       badge.className = 'restriction-badge clean';
       badge.textContent = t('no_restrictions');
     }
+
+    // Buildability panel (deterministically computed — not AI)
+    renderBuildability(data.buildability);
 
     // Report content (markdown -> HTML)
     document.getElementById('report-content').innerHTML = simpleMarkdown(data.report_md);

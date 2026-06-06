@@ -1,6 +1,8 @@
 """AI property report generation using Anthropic Claude."""
 
 import os
+from dataclasses import asdict
+
 import anthropic
 
 
@@ -353,12 +355,50 @@ IMPORTANT RULES:
 - If YPD BUILDING DENSITY data is available, prefer it over the POLEODOMIKI Σ.Δ. — it is more reliable
 - Include ALL FEK PDF URLs and diagram URLs as clickable links — these are high-value for surveyors
 - For building permits, list each one with specific numbers (area, height, floors) — don't just summarize
-- If address data is available, include it in the Ταυτότητα Ακινήτου section"""
+- If address data is available, include it in the Ταυτότητα Ακινήτου section
+- A "COMPUTED BUILDABILITY" section may be provided. Those values are calculated
+  deterministically by the system from the planning parameters. You MUST use those
+  exact numbers in the Πολεοδομικά Στοιχεία section (max δόμηση, max κάλυψη,
+  ενδεικτικοί όροφοι, αρτιότητα). Do NOT recompute, round differently, or invent
+  buildability figures. Repeat any warnings it contains."""
 
 
-async def generate_property_report(all_layers: dict, kaek_info: dict) -> str:
-    """Generate an AI property due diligence report using Claude."""
+def _format_buildability(bld: dict | None) -> str:
+    """Render the deterministically-computed buildability as an authoritative block."""
+    if not bld:
+        return ""
+    lines = ["=== COMPUTED BUILDABILITY (authoritative — use these exact values) ==="]
+    if bld.get("max_floor_area_m2") is not None:
+        lines.append(f"Max buildable floor area (δόμηση): {bld['max_floor_area_m2']} m²")
+    if bld.get("max_footprint_m2") is not None:
+        lines.append(f"Max ground footprint (κάλυψη): {bld['max_footprint_m2']} m²")
+    if bld.get("indicative_max_floors") is not None:
+        lines.append(f"Indicative max floors: {bld['indicative_max_floors']}")
+    if bld.get("is_buildable_lot") is not None:
+        lines.append(f"Buildable lot (άρτιο & οικοδομήσιμο): {'ΝΑΙ' if bld['is_buildable_lot'] else 'ΟΧΙ'}")
+    if bld.get("inputs_used"):
+        lines.append(f"Inputs used: {bld['inputs_used']}")
+    for w in bld.get("warnings", []):
+        lines.append(f"WARNING: {w}")
+    for a in bld.get("assumptions", []):
+        lines.append(f"ASSUMPTION: {a}")
+    return "\n".join(lines)
+
+
+async def generate_property_report(all_layers: dict, kaek_info: dict, buildability=None) -> str:
+    """Generate an AI property due diligence report using Claude.
+
+    ``buildability`` is the deterministically-computed result (a dataclass or
+    dict); when provided it is prepended as authoritative ground-truth so the
+    model explains real numbers instead of guessing them.
+    """
+    if buildability is not None and not isinstance(buildability, dict):
+        buildability = asdict(buildability)
+
     layer_data = _format_layer_data(all_layers, kaek_info)
+    bld_block = _format_buildability(buildability)
+    if bld_block:
+        layer_data = bld_block + "\n\n" + layer_data
 
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
