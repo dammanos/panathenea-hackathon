@@ -1,6 +1,8 @@
 """Property due diligence report generation."""
 
 import asyncio
+from dataclasses import asdict
+
 import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -8,6 +10,7 @@ from pydantic import BaseModel
 from backend.services.coordinate_converter import wgs84_to_egsa87
 from backend.services.tee_service import get_all_layers, get_kaek_parcel
 from backend.services.ai_report import generate_property_report
+from backend.services.buildability import extract_building_params, compute_buildability
 
 
 async def _reverse_geocode(lat: float, lon: float) -> dict:
@@ -61,6 +64,7 @@ class ReportResponse(BaseModel):
     municipality: str = ""
     address: str = ""
     postal_code: str = ""
+    buildability: dict | None = None
 
 
 @router.post("/generate", response_model=ReportResponse)
@@ -117,7 +121,13 @@ async def generate_report(req: ReportRequest):
     address_str = address_data.get("display_name", "")
     postal_code = address_data.get("postcode", "")
 
-    # 3. Generate AI report
+    # 3. Deterministically compute buildability from planning layers (no AI).
+    #    This is passed to the model as authoritative ground-truth so the report
+    #    explains real numbers instead of inventing them.
+    buildability = compute_buildability(extract_building_params(all_layers, area_m2))
+    buildability_dict = asdict(buildability)
+
+    # 4. Generate AI report
     kaek_info = {
         "kaek": req.kaek,
         "lat": lat,
@@ -129,7 +139,7 @@ async def generate_report(req: ReportRequest):
         "address": address_data,
     }
 
-    report_md = await generate_property_report(all_layers, kaek_info)
+    report_md = await generate_property_report(all_layers, kaek_info, buildability=buildability)
 
     return ReportResponse(
         kaek=req.kaek,
@@ -144,4 +154,5 @@ async def generate_report(req: ReportRequest):
         municipality=municipality,
         address=address_str,
         postal_code=postal_code,
+        buildability=buildability_dict,
     )
